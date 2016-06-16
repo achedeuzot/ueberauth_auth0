@@ -24,7 +24,6 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
-  alias Ueberauth.Auth.Extra
 
   @doc """
   Handles the callback from Auth0. When there is a failure from Auth0 the failure is included in the
