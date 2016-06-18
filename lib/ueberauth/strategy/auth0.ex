@@ -84,10 +84,11 @@ defmodule Ueberauth.Strategy.Auth0 do
     %Credentials{
       token: token.access_token,
       refresh_token: token.refresh_token,
-      expires_at: token.expires_at,
       token_type: token.token_type,
+      expires_at: token.expires_at,
       expires: !!token.expires_at,
-      scopes: scopes
+      scopes: scopes,
+      other: token.other_params
     }
   end
 
