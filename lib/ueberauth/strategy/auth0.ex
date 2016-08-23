@@ -32,11 +32,12 @@ defmodule Ueberauth.Strategy.Auth0 do
   def handle_callback!(%Plug.Conn{ params: %{ "code" => code } } = conn) do
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
-    token = apply(module, :get_token!, [[code: code, redirect_uri: redirect_uri]])
+    client = apply(module, :get_token!, [[code: code, redirect_uri: redirect_uri]])
+    token = client.token
     if token.access_token == nil do
       set_errors!(conn, [error(token.other_params["error"], token.other_params["error_description"])])
     else
-      fetch_user(conn, token)
+      fetch_user(conn, client)
     end
   end
 
@@ -54,9 +55,9 @@ defmodule Ueberauth.Strategy.Auth0 do
     |> put_private(:auth0_token, nil)
   end
 
-  defp fetch_user(conn, token) do
+  defp fetch_user(conn, client = %{token: token}) do
     conn = put_private(conn, :auth0_token, token)
-    case OAuth2.AccessToken.get(token, "/userinfo") do
+    case OAuth2.Client.get(client, "/userinfo") do
       { :ok, %OAuth2.Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
       { :ok, %OAuth2.Response{status_code: status_code, body: user} } when status_code in 200..399 ->

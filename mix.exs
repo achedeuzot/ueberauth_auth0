@@ -1,7 +1,7 @@
 defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
 
   def project do
     [
@@ -12,7 +12,7 @@ defmodule UeberauthAuth0.Mixfile do
       source_url: "https://github.com/sntran/ueberauth_auth0",
       homepage_url: "http://hexdocs.pm/ueberauth_auth0",
       package: package,
-      elixir: "~> 1.3-dev",
+      elixir: "~> 1.3",
       deps: deps,
       docs: docs]
   end
@@ -24,7 +24,7 @@ defmodule UeberauthAuth0.Mixfile do
   defp deps do
     [
       {:ueberauth, "~> 0.2"},
-      {:oauth2, "~> 0.6"},
+      {:oauth2, "~> 0.7"},
       {:ex_doc, "~> 0.12", only: :dev},
       {:earmark, "~> 0.2", only: :dev}
     ]

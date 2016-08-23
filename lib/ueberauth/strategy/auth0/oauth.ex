@@ -43,6 +43,8 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   end
 
   def get_token!(params \\ [], opts \\ %{}) do
+    client_secret = options()[:client_secret]
+    params = Keyword.merge(params, client_secret: client_secret)
     headers = Dict.get(opts, :headers, [])
     opts = Dict.get(opts, :options, [])
     client_options = Dict.get(opts, :client_options, [])
