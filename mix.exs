@@ -1,7 +1,7 @@
 defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.3"
 
   def project do
     [
@@ -25,8 +25,8 @@ defmodule UeberauthAuth0.Mixfile do
     [
       {:ueberauth, "~> 0.2"},
       {:oauth2, "~> 0.7"},
-      {:ex_doc, "~> 0.12", only: :dev},
-      {:earmark, "~> 0.2", only: :dev}
+      {:ex_doc, "~> 0.13", only: :dev},
+      {:earmark, "~> 1.0", only: :dev}
     ]
   end
 
