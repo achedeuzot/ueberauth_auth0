@@ -26,9 +26,9 @@
 
   ```elixir
   config :ueberauth, Ueberauth,
-  providers: [
-    auth0: {Ueberauth.Strategy.Auth0, []}
-  ]
+    providers: [
+      auth0: {Ueberauth.Strategy.Auth0, []}
+    ]
   ```
 
   5. Update your provider configuration:
