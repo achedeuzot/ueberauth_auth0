@@ -8,11 +8,11 @@
 
   2. Add `ueberauth_auth0` to your list of dependencies in `mix.exs`:
 
-  ```elixir
-  def deps do
-    [{:ueberauth_auth0, "~> 0.1"}]
-  end
-  ```
+    ```elixir
+    def deps do
+      [{:ueberauth_auth0, "~> 0.2"}]
+    end
+    ```
 
   3. Ensure `ueberauth_auth0` is started before your application:
 
@@ -60,31 +60,10 @@
     get "/:provider/callback", AuthController, :callback
   end
   ```
-  
-  8. Create the controller to handle request and callback:
 
-  ```elixir
-  def request(conn, _params) do
-    render(conn, "login.html", callback_url: Ueberauth.Strategy.Helpers.callback_url(conn))
-  end
+  8. You controller needs to implement callbacks to deal with Ueberauth.Auth and Ueberauth.Failure responses.
 
-  def callback(%Plug.Conn{assigns: %{ueberauth_failure: fails}} = conn, _params) do
-    conn
-    |> put_flash(:error, hd(fails.errors).message)
-    |> render("login.html", callback_url: Ueberauth.Strategy.Helpers.callback_url(conn))
-  end
-
-  def callback(%Plug.Conn{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    # auth = %Ueberauth.Auth{
-    #   credentials: %Ueberauth.Auth.Credentials{
-    #     token: token,
-    #     token_type: token_type,
-    #     other: %{"id_token" => id_token}
-    #   }
-    # }
-    redirect(conn, to: private_page_path(conn, :index))
-  end
-  ```
+  For an example implementation see the [Überauth Example](https://github.com/ueberauth/ueberauth_example) application.
 
 ## License
 

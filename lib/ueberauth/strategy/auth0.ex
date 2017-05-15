@@ -1,16 +1,16 @@
 defmodule Ueberauth.Strategy.Auth0 do
   @moduledoc """
   Provides an Ueberauth strategy for authenticating with Auth0.
-  
+
   You can edit the behaviour of the Strategy by including some options when you register your provider.
-  
+
   To set the `uid_field`
       config :ueberauth, Ueberauth,
         providers: [
           auth0: { Ueberauth.Strategy.Auth0, [uid_field: :email] }
         ]
   Default is `:user_id`
-  
+
   To set the default ['scopes'](https://auth0.com/docs/scopes) (permissions):
       config :ueberauth, Ueberauth,
         providers: [
@@ -24,6 +24,18 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
+
+  @doc """
+  Handles the redirect to Auth0.
+  """
+  def handle_request!(conn) do
+    scopes = conn.params["scope"] || option(conn, :default_scope)
+    opts = [ scope: scopes ]
+    opts = Keyword.put(opts, :redirect_uri, callback_url(conn))
+    module = option(conn, :oauth2_module)
+    callback_url = apply(module, :authorize_url!, [opts])
+    redirect!(conn, callback_url)
+  end
 
   @doc """
   Handles the callback from Auth0. When there is a failure from Auth0 the failure is included in the
