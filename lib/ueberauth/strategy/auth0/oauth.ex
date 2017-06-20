@@ -27,7 +27,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
       site: "https://#{domain}",
       authorize_url: "https://#{domain}/authorize",
       token_url: "https://#{domain}/oauth/token",
-      userinfo_url: "https://#{domain}/userinfo"
+      userinfo_url: "https://#{domain}/userinfo",
       client_id: client_id,
       client_secret: client_secret
     ]
