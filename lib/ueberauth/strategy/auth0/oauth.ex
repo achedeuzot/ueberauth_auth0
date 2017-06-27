@@ -75,12 +75,6 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)
   end
 
-  defp get_config_value(config_value) do
-    case config_value do
-      {:system, value} ->
-        System.get_env(value)
-      value ->
-        value
-    end
-  end
+  defp get_config_value({:system, value}), do: System.get_env(value)
+  defp get_config_value(value), do: value
 end
