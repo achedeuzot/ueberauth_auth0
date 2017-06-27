@@ -6,18 +6,30 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
         domain: System.get_env("AUTH0_DOMAIN"),
         client_id: System.get_env("AUTH0_CLIENT_ID"),
         client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+
+  Alternatively, if you need to setup config without needing to recompile, do the following.
+      config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+        domain: {:system, "AUTH0_DOMAIN"},
+        client_id: {:system, "AUTH0_CLIENT_ID"},
+        client_secret: {:system, "AUTH0_CLIENT_SECRET"}
   """
   use OAuth2.Strategy
 
   def options() do
     configs = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
-    domain = configs[:domain]
+
+    domain = get_config_value(configs[:domain])
+    client_id = get_config_value(configs[:client_id])
+    client_secret = get_config_value(configs[:client_secret])
+
     opts = [
       strategy: __MODULE__,
       site: "https://#{domain}",
       authorize_url: "https://#{domain}/authorize",
       token_url: "https://#{domain}/oauth/token",
-      userinfo_url: "https://#{domain}/userinfo"
+      userinfo_url: "https://#{domain}/userinfo",
+      client_id: client_id,
+      client_secret: client_secret
     ]
     Keyword.merge(configs, opts)
   end
@@ -62,4 +74,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     |> put_header("Accept", "application/json")
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)
   end
+
+  defp get_config_value({:system, value}), do: System.get_env(value)
+  defp get_config_value(value), do: value
 end
