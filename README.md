@@ -8,11 +8,11 @@
 
   2. Add `ueberauth_auth0` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:ueberauth_auth0, "~> 0.2"}]
-    end
-    ```
+  ```elixir
+  def deps do
+    [{:ueberauth_auth0, "~> 0.2"}]
+  end
+  ```
 
   3. Ensure `ueberauth_auth0` is started before your application:
 
