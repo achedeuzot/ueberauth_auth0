@@ -46,7 +46,7 @@ defmodule UeberauthAuth0.Mixfile do
     [
       name: :ueberauth_auth0,
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
-      maintainers: ["Son Tran-Nguyen"],
+      maintainers: ["Son Tran-Nguyen", "Nikita Sobolev"],
       licenses: ["MIT"],
       links: %{"GitHub": "https://github.com/sntran/ueberauth_auth0"}]
   end

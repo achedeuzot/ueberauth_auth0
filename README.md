@@ -1,6 +1,9 @@
 # Überauth Auth0
 
+![Auth0 logo](https://github.com/sntran/ueberauth_auth0/blob/master/media/auth0-logo.png)
+
 > Auth0 OAuth2 strategy for Überauth.
+
 
 ## Installation
 
@@ -65,6 +68,12 @@
 
   For an example implementation see the [Überauth Example](https://github.com/ueberauth/ueberauth_example) application.
 
+
+## Changelog
+
+`ueberauth_auth0` follows semantic versioning. See [`CHANGELOG.md`](https://github.com/sntran/ueberauth_auth0/blob/master/CHANGELOG.md) for more information.
+
+
 ## License
 
-Please see [LICENSE](https://github.com/sntran/ueberauth_auth0/blob/master/LICENSE) for licensing details.
+MIT. Please see [LICENSE](https://github.com/sntran/ueberauth_auth0/blob/master/LICENSE) for licensing details.
