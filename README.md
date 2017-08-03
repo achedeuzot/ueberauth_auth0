@@ -1,8 +1,10 @@
 # Überauth Auth0
 
+> Auth0 OAuth2 strategy for Überauth.
+
 ![Auth0 logo](https://github.com/sntran/ueberauth_auth0/blob/master/media/auth0-logo.png)
 
-> Auth0 OAuth2 strategy for Überauth.
+[![Build Status](https://img.shields.io/travis/sntran/ueberauth_auth0/master.svg)](https://travis-ci.org/sntran/ueberauth_auth0) [![Coverage Status](https://coveralls.io/repos/github/sntran/ueberauth_auth0/badge.svg?branch=master)](https://coveralls.io/github/sntran/ueberauth_auth0?branch=master) [![Hex Version](https://img.shields.io/hexpm/v/ueberauth_auth0.svg)](https://hex.pm/packages/ueberauth_auth0) [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 
 ## Installation

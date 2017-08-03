@@ -14,8 +14,10 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
         client_secret: {:system, "AUTH0_CLIENT_SECRET"}
   """
   use OAuth2.Strategy
+  alias OAuth2.Client
+  alias OAuth2.Strategy.AuthCode
 
-  def options() do
+  def options do
     configs = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
     domain = get_config_value(configs[:domain])
@@ -42,16 +44,18 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   These options are only useful for usage outside the normal callback phase of Ueberauth.
   """
   def client(opts \\ []) do
-    opts = Keyword.merge(options(), opts)
-    OAuth2.Client.new(opts)
+    options()
+    |> Keyword.merge(opts)
+    |> Client.new
   end
 
   @doc """
   Provides the authorize url for the request phase of Ueberauth. No need to call this usually.
   """
   def authorize_url!(params \\ [], opts \\ []) do
-    client(opts)
-    |> OAuth2.Client.authorize_url!(params)
+    opts
+    |> client
+    |> Client.authorize_url!(params)
   end
 
   def get_token!(params \\ [], opts \\ %{}) do
@@ -60,19 +64,19 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     headers = Map.get(opts, :headers, [])
     opts = Map.get(opts, :options, [])
     client_options = Map.get(opts, :client_options, [])
-    OAuth2.Client.get_token!(client(client_options), params, headers, opts)
+    Client.get_token!(client(client_options), params, headers, opts)
   end
 
   # Strategy Callbacks
 
   def authorize_url(client, params) do
-    OAuth2.Strategy.AuthCode.authorize_url(client, params)
+    AuthCode.authorize_url(client, params)
   end
 
   def get_token(client, params, headers) do
     client
     |> put_header("Accept", "application/json")
-    |> OAuth2.Strategy.AuthCode.get_token(params, headers)
+    |> AuthCode.get_token(params, headers)
   end
 
   defp get_config_value({:system, value}), do: System.get_env(value)
