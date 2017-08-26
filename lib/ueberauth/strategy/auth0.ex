@@ -1,5 +1,5 @@
 defmodule Ueberauth.Strategy.Auth0 do
-  @moduledoc """
+    @moduledoc """
   Provides an Ueberauth strategy for authenticating with Auth0.
 
   You can edit the behaviour of the Strategy by including some options when you register your provider.
@@ -9,17 +9,17 @@ defmodule Ueberauth.Strategy.Auth0 do
         providers: [
           auth0: { Ueberauth.Strategy.Auth0, [uid_field: :email] }
         ]
-  Default is `:user_id`
+  Default is `:sub`
 
   To set the default ['scopes'](https://auth0.com/docs/scopes) (permissions):
       config :ueberauth, Ueberauth,
         providers: [
-          auth0: { Ueberauth.Strategy.Auth0, [default_scope: "openid email"] }
+          auth0: { Ueberauth.Strategy.Auth0, [default_scope: "openid profile email"] }
         ]
-  Deafult is "openid email"
+  Deafult is `"openid profile email"`
   """
-  use Ueberauth.Strategy, uid_field: :user_id,
-                          default_scope: "openid email",
+  use Ueberauth.Strategy, uid_field: :sub,
+                          default_scope: "openid profile email",
                           oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
   alias Ueberauth.Auth.Info
