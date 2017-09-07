@@ -58,12 +58,12 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     |> Client.authorize_url!(params)
   end
 
-  def get_token!(params \\ [], opts \\ %{}) do
+  def get_token!(params \\ [], opts \\ []) do
     client_secret = options()[:client_secret]
     params = Keyword.merge(params, client_secret: client_secret)
-    headers = Map.get(opts, :headers, [])
-    opts = Map.get(opts, :options, [])
-    client_options = Map.get(opts, :client_options, [])
+    headers = Keyword.get(opts, :headers, [])
+    opts = Keyword.get(opts, :options, [])
+    client_options = Keyword.get(opts, :client_options, [])
     Client.get_token!(client(client_options), params, headers, opts)
   end
 
