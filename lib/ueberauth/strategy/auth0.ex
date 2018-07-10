@@ -23,6 +23,7 @@ defmodule Ueberauth.Strategy.Auth0 do
                           oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
   alias Ueberauth.Auth.Info
+  alias Ueberauth.Auth.Extra
   alias Ueberauth.Auth.Credentials
   alias Plug.Conn
   alias OAuth2.{Response, Error, Client}
@@ -132,6 +133,19 @@ defmodule Ueberauth.Strategy.Auth0 do
       first_name: user["given_name"],
       last_name: user["family_name"],
       image: user["picture"]
+    }
+  end
+
+  @doc """
+  Populates the extra section of the `Ueberauth.Auth` struct with auth0's `app_metadata` field.
+  """
+  def extra(conn) do
+    user = conn.private.auth0_user
+
+    %Extra{
+       raw_info: %{
+         "app_metadata" => Map.get(user, "app_metadata", %{})
+       }
     }
   end
 
