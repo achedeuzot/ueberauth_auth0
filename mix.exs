@@ -1,7 +1,7 @@
 defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.3.1"
 
   def project do
     [
@@ -36,19 +36,19 @@ defmodule UeberauthAuth0.Mixfile do
 
   defp deps do
     [
-      {:ueberauth, "~> 0.4"},
+      {:ueberauth, "~> 0.5"},
       {:oauth2, "~> 0.9"},
 
       # Docs:
-      {:ex_doc, "~> 0.13", only: :dev},
-      {:earmark, "~> 1.0", only: :dev},
+      {:ex_doc, "~> 0.18", only: :dev},
+      {:earmark, "~> 1.2", only: :dev},
 
       # Testing:
-      {:exvcr, "~> 0.8", only: :test},
-      {:excoveralls, "~> 0.7", only: :test},
+      {:exvcr, "~> 0.10", only: :test},
+      {:excoveralls, "~> 0.9", only: :test},
 
       # Lint:
-      {:credo, "~> 0.8", only: [:dev, :test]}
+      {:credo, "~> 0.9", only: [:dev, :test]}
     ]
   end
 
