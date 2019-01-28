@@ -48,7 +48,7 @@ defmodule UeberauthAuth0.Mixfile do
       {:excoveralls, "~> 0.9", only: :test},
 
       # Lint:
-      {:credo, "~> 0.9", only: [:dev, :test]}
+      {:credo, "~> 1.0", only: [:dev, :test]}
     ]
   end
 
