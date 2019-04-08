@@ -17,8 +17,8 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   alias OAuth2.Client
   alias OAuth2.Strategy.AuthCode
 
-  def options do
-    configs = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
+  def options(otp_app) do
+    configs = Application.get_env(otp_app || :ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
     domain = get_config_value(configs[:domain])
     client_id = get_config_value(configs[:client_id])
@@ -44,7 +44,9 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   These options are only useful for usage outside the normal callback phase of Ueberauth.
   """
   def client(opts \\ []) do
-    options()
+    opts
+    |> Keyword.get(:otp_app)
+    |> options()
     |> Keyword.merge(opts)
     |> Client.new
   end
@@ -59,11 +61,18 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   end
 
   def get_token!(params \\ [], opts \\ []) do
-    client_secret = options()[:client_secret]
+    otp_app = Keyword.get(opts, :otp_app)
+    client_secret =
+      otp_app
+      |> options()
+      |> Keyword.get(:client_secret)
     params = Keyword.merge(params, client_secret: client_secret)
     headers = Keyword.get(opts, :headers, [])
     opts = Keyword.get(opts, :options, [])
-    client_options = Keyword.get(opts, :client_options, [])
+    client_options =
+      opts
+      |> Keyword.get(:client_options, [])
+      |> Keyword.merge([otp_app: otp_app])
     Client.get_token!(client(client_options), params, headers, opts)
   end
 
