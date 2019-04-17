@@ -19,6 +19,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
 
   def options(otp_app) do
     configs = Application.get_env(otp_app || :ueberauth, Ueberauth.Strategy.Auth0.OAuth)
+      || raise("Expected to find env settings at Ueberauth.Strategy.Auth0.OAuth, got nil. Check your config.exs.")
 
     domain = get_config_value(configs[:domain])
     client_id = get_config_value(configs[:client_id])
