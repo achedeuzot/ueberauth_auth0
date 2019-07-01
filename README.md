@@ -2,10 +2,16 @@
 
 > Auth0 OAuth2 strategy for Überauth.
 
-![Auth0 logo](https://github.com/sntran/ueberauth_auth0/blob/master/media/auth0-logo.png)
+![Auth0 logo](https://github.com/vivakit/ueberauth_auth0/blob/master/priv/media/auth0-logo.png)
 
-[![Build Status](https://img.shields.io/travis/sntran/ueberauth_auth0/master.svg)](https://travis-ci.org/sntran/ueberauth_auth0) [![Coverage Status](https://coveralls.io/repos/github/sntran/ueberauth_auth0/badge.svg?branch=master)](https://coveralls.io/github/sntran/ueberauth_auth0?branch=master) [![Hex Version](https://img.shields.io/hexpm/v/ueberauth_auth0.svg)](https://hex.pm/packages/ueberauth_auth0) [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/travis/vivakit/ueberauth_auth0/master.svg)](https://travis-ci.org/vivakit/ueberauth_auth0) [![Coverage Status](https://coveralls.io/repos/github/vivakit/ueberauth_auth0/badge.svg?branch=master)](https://coveralls.io/github/vivakit/ueberauth_auth0?branch=master) [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
+
+## Origin
+
+This project was originally maintained on https://github.com/sntran/ueberauth_auth0 
+
+Huge kudos to the maintainers there :)
 
 ## Installation
 
@@ -15,7 +21,7 @@
 
   ```elixir
   def deps do
-    [{:ueberauth_auth0, "~> 0.3"}]
+    [{:ueberauth_auth0, github: "vivakit/ueberauth_auth0", branch: "master"}]
   end
   ```
 
@@ -73,9 +79,9 @@
 
 ## Changelog
 
-`ueberauth_auth0` follows semantic versioning. See [`CHANGELOG.md`](https://github.com/sntran/ueberauth_auth0/blob/master/CHANGELOG.md) for more information.
+`ueberauth_auth0` follows semantic versioning. See [`CHANGELOG.md`](https://github.com/vivakit/ueberauth_auth0/blob/master/CHANGELOG.md) for more information.
 
 
 ## License
 
-MIT. Please see [LICENSE](https://github.com/sntran/ueberauth_auth0/blob/master/LICENSE) for licensing details.
+MIT. Please see [LICENSE](https://github.com/vivakit/ueberauth_auth0/blob/master/LICENSE) for licensing details.

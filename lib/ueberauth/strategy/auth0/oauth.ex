@@ -33,6 +33,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
       client_id: client_id,
       client_secret: client_secret
     ]
+
     Keyword.merge(configs, opts)
   end
 
@@ -48,7 +49,8 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     |> Keyword.get(:otp_app)
     |> options()
     |> Keyword.merge(opts)
-    |> Client.new
+    |> Client.new()
+    |> Client.put_serializer("application/json", Jason)
   end
 
   @doc """
@@ -62,17 +64,21 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
 
   def get_token!(params \\ [], opts \\ []) do
     otp_app = Keyword.get(opts, :otp_app)
+
     client_secret =
       otp_app
       |> options()
       |> Keyword.get(:client_secret)
+
     params = Keyword.merge(params, client_secret: client_secret)
     headers = Keyword.get(opts, :headers, [])
     opts = Keyword.get(opts, :options, [])
+
     client_options =
       opts
       |> Keyword.get(:client_options, [])
-      |> Keyword.merge([otp_app: otp_app])
+      |> Keyword.merge(otp_app: otp_app)
+
     Client.get_token!(client(client_options), params, headers, opts)
   end
 
