@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.1
+
+- Adds configurable OAuth JSON serializer (Issue #55).
+
 ## Version 0.4.0
 
 - Updated all dependencies, mostly OAuth2

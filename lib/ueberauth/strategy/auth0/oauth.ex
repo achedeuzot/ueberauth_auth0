@@ -12,6 +12,21 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
         domain: {:system, "AUTH0_DOMAIN"},
         client_id: {:system, "AUTH0_CLIENT_ID"},
         client_secret: {:system, "AUTH0_CLIENT_SECRET"}
+
+  If you need to customize the JSON serializer, you can configure it in the
+  Ueberauth configuration:
+
+      config :ueberauth, Ueberauth,
+        json_library: Poison # Defaults to Jason
+
+  If you need fine-grained settings for the auth0 OAuth connector, you can customize the
+  serializer by setting the `serializers` map:
+
+      config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+        serializers: %{
+          "application/json" => Jason,
+        }
+
   """
   use OAuth2.Strategy
   alias OAuth2.Client
@@ -23,6 +38,9 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     domain = get_config_value(configs[:domain])
     client_id = get_config_value(configs[:client_id])
     client_secret = get_config_value(configs[:client_secret])
+    serializers = configs[:serializers] || %{
+      "application/json" => Ueberauth.json_library(otp_app),
+    }
 
     opts = [
       strategy: __MODULE__,
@@ -31,7 +49,8 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
       token_url: "https://#{domain}/oauth/token",
       userinfo_url: "https://#{domain}/userinfo",
       client_id: client_id,
-      client_secret: client_secret
+      client_secret: client_secret,
+      serializers: serializers,
     ]
 
     Keyword.merge(configs, opts)
@@ -50,7 +69,6 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
     |> options()
     |> Keyword.merge(opts)
     |> Client.new()
-    |> Client.put_serializer("application/json", Jason)
   end
 
   @doc """
