@@ -1,5 +1,5 @@
 defmodule Ueberauth.Strategy.Auth0 do
-    @moduledoc """
+  @moduledoc """
   Provides an Ueberauth strategy for authenticating with Auth0.
 
   You can edit the behaviour of the Strategy by including some options when you register your provider.
@@ -16,16 +16,16 @@ defmodule Ueberauth.Strategy.Auth0 do
         providers: [
           auth0: { Ueberauth.Strategy.Auth0, [default_scope: "openid profile email"] }
         ]
-  Deafult is `"openid profile email"`
+  Default is `"openid profile email"`
   """
-  use Ueberauth.Strategy, uid_field: :sub,
-                          default_scope: "openid profile email",
-                          oauth2_module: Ueberauth.Strategy.Auth0.OAuth
+  use Ueberauth.Strategy,
+    uid_field: :sub,
+    default_scope: "openid profile email",
+    oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
-  alias Ueberauth.Auth.Info
-  alias Ueberauth.Auth.Credentials
+  alias OAuth2.{Client, Error, Response}
   alias Plug.Conn
-  alias OAuth2.{Response, Error, Client}
+  alias Ueberauth.Auth.{Credentials, Info}
 
   @doc """
   Handles the redirect to Auth0.
@@ -35,10 +35,13 @@ defmodule Ueberauth.Strategy.Auth0 do
     opts = [scope: scopes]
     opts = Keyword.put(opts, :redirect_uri, callback_url(conn))
     module = option(conn, :oauth2_module)
-    callback_url = apply(module, :authorize_url!, [
-      opts,
-      [otp_app: option(conn, :otp_app)]
-    ])
+
+    callback_url =
+      apply(module, :authorize_url!, [
+        opts,
+        [otp_app: option(conn, :otp_app)]
+      ])
+
     redirect!(conn, callback_url)
   end
 
@@ -49,15 +52,22 @@ defmodule Ueberauth.Strategy.Auth0 do
   def handle_callback!(%Conn{params: %{"code" => code}} = conn) do
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
-    client = apply(module, :get_token!, [
-      [code: code, redirect_uri: redirect_uri],
-      [otp_app: option(conn, :otp_app)]
-    ])
+
+    client =
+      apply(module, :get_token!, [
+        [code: code, redirect_uri: redirect_uri],
+        [otp_app: option(conn, :otp_app)]
+      ])
+
     token = client.token
+
     if token.access_token == nil do
-      set_errors!(conn, [error(
-        token.other_params["error"], token.other_params["error_description"]
-      )])
+      set_errors!(conn, [
+        error(
+          token.other_params["error"],
+          token.other_params["error_description"]
+        )
+      ])
     else
       fetch_user(conn, client)
     end
@@ -79,14 +89,18 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   defp fetch_user(conn, %{token: token} = client) do
     conn = put_private(conn, :auth0_token, token)
+
     case Client.get(client, "/userinfo") do
       {:ok, %Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
+
       {:ok, %Response{status_code: status_code, body: user}}
-        when status_code in 200..399 ->
-          put_private(conn, :auth0_user, user)
+      when status_code in 200..399 ->
+        put_private(conn, :auth0_user, user)
+
       {:error, %Response{body: body}} ->
         set_errors!(conn, [error("OAuth2", body)])
+
       {:error, %Error{reason: reason}} ->
         set_errors!(conn, [error("OAuth2", reason)])
     end
@@ -96,9 +110,7 @@ defmodule Ueberauth.Strategy.Auth0 do
   Fetches the uid field from the Auth0 response.
   """
   def uid(conn) do
-    conn.private.auth0_user[
-      to_string(option(conn, :uid_field))
-    ]
+    conn.private.auth0_user[to_string(option(conn, :uid_field))]
   end
 
   @doc """
@@ -106,6 +118,7 @@ defmodule Ueberauth.Strategy.Auth0 do
   """
   def credentials(conn) do
     token = conn.private.auth0_token
+
     scopes =
       (token.other_params["scope"] || "")
       |> String.split(",")
