@@ -85,6 +85,8 @@ defmodule Ueberauth.Strategy.Auth0 do
       {:ok, %Response{status_code: status_code, body: user}}
         when status_code in 200..399 ->
           put_private(conn, :auth0_user, user)
+      {:error, %Response{body: body}} ->
+        set_errors!(conn, [error("OAuth2", body)])
       {:error, %Error{reason: reason}} ->
         set_errors!(conn, [error("OAuth2", reason)])
     end

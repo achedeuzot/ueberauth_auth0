@@ -1,7 +1,7 @@
 defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
-  @version "0.3.1"
+  @version "0.4.0"
 
   def project do
     [
@@ -12,7 +12,7 @@ defmodule UeberauthAuth0.Mixfile do
       source_url: "https://github.com/sntran/ueberauth_auth0",
       homepage_url: "http://hexdocs.pm/ueberauth_auth0",
       package: package(),
-      elixir: "~> 1.3",
+      elixir: "~> 1.4",
       deps: deps(),
       docs: docs(),
 
@@ -25,7 +25,7 @@ defmodule UeberauthAuth0.Mixfile do
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test,
+        "coveralls.html": :test
       ]
     ]
   end
@@ -36,19 +36,19 @@ defmodule UeberauthAuth0.Mixfile do
 
   defp deps do
     [
-      {:ueberauth, "~> 0.5"},
-      {:oauth2, "~> 0.9"},
+      {:ueberauth, "~> 0.6"},
+      {:oauth2, "~> 1.0"},
 
       # Docs:
-      {:ex_doc, "~> 0.18", only: :dev},
-      {:earmark, "~> 1.2", only: :dev},
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:earmark, "~> 1.3", only: :dev},
 
       # Testing:
       {:exvcr, "~> 0.10", only: :test},
-      {:excoveralls, "~> 0.9", only: :test},
+      {:excoveralls, "~> 0.11", only: :test},
 
       # Lint:
-      {:credo, "~> 1.0", only: [:dev, :test]}
+      {:credo, "~> 1.1", only: [:dev, :test]}
     ]
   end
 

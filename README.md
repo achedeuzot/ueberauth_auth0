@@ -33,7 +33,10 @@
   config :ueberauth, Ueberauth,
     providers: [
       auth0: {Ueberauth.Strategy.Auth0, []}
-    ]
+    ],
+    # If you wish to customize the OAuth serializer,
+    # add the line below. Defaults to Jason.
+    json_library: Poison
   ```
 
   5. Update your provider configuration:
@@ -42,7 +45,13 @@
   config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
     domain: System.get_env("AUTH0_DOMAIN"),
     client_id: System.get_env("AUTH0_CLIENT_ID"),
-    client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+    client_secret: System.get_env("AUTH0_CLIENT_SECRET"),
+    # You can further customize the OAuth serializers
+    # by adding the line below. If you already set
+    # the `json_library` above, there is no need for this.
+    serializers: %{
+      "application/json" => Jason,
+    }
   ```
 
   6. Include the Überauth plug in your controller:
