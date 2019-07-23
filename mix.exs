@@ -37,10 +37,10 @@ defmodule UeberauthAuth0.Mixfile do
   defp deps do
     [
       {:ueberauth, "~> 0.6"},
-      {:oauth2, "~> 1.0"},
+      {:oauth2, "~> 2.0"},
 
       # Docs:
-      {:ex_doc, "~> 0.19", only: :dev},
+      {:ex_doc, "~> 0.21", only: :dev},
       {:earmark, "~> 1.3", only: :dev},
 
       # Testing:
