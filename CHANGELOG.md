@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.0
+
+- Massive `deps` update, mainly `oauth2`.
+
 ## Version 0.3.0
 
 Thanks @sobolevn for updating the followings:

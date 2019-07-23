@@ -33,7 +33,10 @@
   config :ueberauth, Ueberauth,
     providers: [
       auth0: {Ueberauth.Strategy.Auth0, []}
-    ]
+    ],
+    # If you wish to customize the OAuth serializer,
+    # add the line below. Defaults to Jason.
+    json_library: Poison
   ```
 
   5. Update your provider configuration:
