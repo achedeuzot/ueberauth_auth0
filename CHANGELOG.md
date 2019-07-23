@@ -2,7 +2,7 @@
 
 ## Version 0.4.0
 
-- Massive `deps` update, mainly `oauth2` with a new `serializer` option.
+- Massive `deps` update, mainly `oauth2`.
 
 ## Version 0.3.0
 
