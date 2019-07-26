@@ -15,9 +15,8 @@ defmodule UeberauthAuth0.Mixfile do
       elixir: "~> 1.4",
       deps: deps(),
       docs: docs(),
-
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
 
       # Test coverage:
       test_coverage: [tool: ExCoveralls],
@@ -26,6 +25,11 @@ defmodule UeberauthAuth0.Mixfile do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
+      ],
+
+      # Type checking
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ]
     ]
   end
@@ -46,6 +50,9 @@ defmodule UeberauthAuth0.Mixfile do
       # Testing:
       {:exvcr, "~> 0.10", only: :test},
       {:excoveralls, "~> 0.11", only: :test},
+
+      # Type checking
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
 
       # Lint:
       {:credo, "~> 1.1", only: [:dev, :test]}
@@ -70,7 +77,7 @@ defmodule UeberauthAuth0.Mixfile do
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["Son Tran-Nguyen", "Nikita Sobolev"],
       licenses: ["MIT"],
-      links: %{"GitHub": "https://github.com/sntran/ueberauth_auth0"}
+      links: %{GitHub: "https://github.com/sntran/ueberauth_auth0"}
     ]
   end
 end

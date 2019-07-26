@@ -21,4 +21,8 @@ erl_crash.dump
 *.ez
 *.tar
 
+# Ignore dialyzer files
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
+
 .elixir_ls
