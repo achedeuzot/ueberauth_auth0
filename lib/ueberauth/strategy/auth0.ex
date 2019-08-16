@@ -75,22 +75,13 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   def handle_callback!(
         %Conn{
-          params: %{
-            "access_token" => access_token,
-            "expires_in" => expires_at,
-            "id_token" => id_token,
-            "token_type" => token_type
-          }
+          params:
+            %{
+              "access_token" => _access_token
+            } = params
         } = conn
       ) do
-    token = %OAuth2.AccessToken{
-      access_token: access_token,
-      expires_at: expires_at,
-      other_params: %{"id_token" => id_token},
-      refresh_token: nil,
-      token_type: token_type
-    }
-
+    token = OAuth2.AccessToken.new(params)
     module = option(conn, :oauth2_module)
 
     client =
