@@ -89,7 +89,12 @@ defmodule Ueberauth.Strategy.Auth0 do
       |> apply(:client, [])
       |> Map.put(:token, token)
 
-    fetch_user(conn, client)
+    try do
+      fetch_user(conn, client)
+    rescue
+      _error ->
+        set_errors!(conn, [error("OAuth2", "Invalid token")])
+    end
   end
 
   @doc false
