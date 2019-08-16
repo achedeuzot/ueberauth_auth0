@@ -73,6 +73,34 @@ defmodule Ueberauth.Strategy.Auth0 do
     end
   end
 
+  def handle_callback!(
+        %Conn{
+          params: %{
+            "access_token" => access_token,
+            "expires_in" => expires_at,
+            "id_token" => id_token,
+            "token_type" => token_type
+          }
+        } = conn
+      ) do
+    token = %OAuth2.AccessToken{
+      access_token: access_token,
+      expires_at: expires_at,
+      other_params: %{"id_token" => id_token},
+      refresh_token: nil,
+      token_type: token_type
+    }
+
+    module = option(conn, :oauth2_module)
+
+    client =
+      module
+      |> apply(:client, [])
+      |> Map.put(:token, token)
+
+    fetch_user(conn, client)
+  end
+
   @doc false
   def handle_callback!(conn) do
     set_errors!(conn, [error("missing_code", "No code received")])
