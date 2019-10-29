@@ -17,6 +17,13 @@ defmodule Ueberauth.Strategy.Auth0 do
           auth0: { Ueberauth.Strategy.Auth0, [default_scope: "openid profile email"] }
         ]
   Default is `"openid profile email"`
+
+  To set the `audience`
+      config :ueberauth, Ueberauth,
+        providers: [
+          auth0: { Ueberauth.Strategy.Auth0, [audience: "example-audience"] }
+        ]
+  Not used by default
   """
   use Ueberauth.Strategy,
     uid_field: :sub,
@@ -32,8 +39,12 @@ defmodule Ueberauth.Strategy.Auth0 do
   """
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
-    opts = [scope: scopes]
-    opts = Keyword.put(opts, :redirect_uri, callback_url(conn))
+
+    opts =
+      [scope: scopes]
+      |> Keyword.put(:redirect_uri, callback_url(conn))
+      |> with_optional(:audience, conn)
+
     module = option(conn, :oauth2_module)
 
     callback_url =
@@ -152,6 +163,10 @@ defmodule Ueberauth.Strategy.Auth0 do
       last_name: user["family_name"],
       image: user["picture"]
     }
+  end
+
+  defp with_optional(opts, key, conn) do
+    if option(conn, key), do: Keyword.put(opts, key, option(conn, key)), else: opts
   end
 
   defp option(conn, key) do
