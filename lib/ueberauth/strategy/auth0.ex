@@ -41,7 +41,8 @@ defmodule Ueberauth.Strategy.Auth0 do
     scopes = conn.params["scope"] || option(conn, :default_scope)
 
     opts =
-      [scope: scopes]
+      [scope: scopes, connection: conn.params["connection"]]
+      |> Enum.filter(fn ({_, v}) -> v  end)
       |> Keyword.put(:redirect_uri, callback_url(conn))
       |> with_optional(:audience, conn)
 
