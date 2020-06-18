@@ -1,0 +1,39 @@
+[
+  {
+    "request": {
+      "body": "client_id=clientidKFpqmR7aO1iVUOQR1LMKbZvk&client_secret=clientsecrethzqAhvWpJhAehfkzupWelgut-hRh7ZYOBOmaXsCRryhy7bqWzOCx&code=code_abc&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded",
+        "accept": "application/json",
+        "authorization": "Basic Y2xpZW50aWRLRnBxbVI3YU8xaVZVT1FSMUxNS2Jadms6Y2xpZW50c2VjcmV0aHpxQWh2V3BKaEFlaGZrenVwV2VsZ3V0LWhSaDdaWU9CT21hWHNDUnJ5aHk3YnFXek9DeA=="
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://example-app.auth0.com/oauth/token"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\"error\":\"something_wrong\",\"error_description\":\"Something went wrong\"}",
+      "headers": {
+        "Date": "Wed, 17 Jun 2020 23:39:36 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "69",
+        "Connection": "keep-alive",
+        "Server": "nginx",
+        "ot-tracer-spanid": "3085123a49690f22",
+        "ot-tracer-traceid": "2611213f15e78af3",
+        "ot-tracer-sampled": "true",
+        "ot-baggage-auth0-request-id": "d8916634ed436afe36744f6e",
+        "X-Auth0-RequestId": "1dd455670d641d81c4c8",
+        "Set-Cookie": "did=s%3Av0%3Acd966af0-b0e3-11ea-85ed-0d9365a06bc5.25colYvrl8qxIpnLc4gibEDFW5BvUQ6ryaj0zR1P7zc; Max-Age=31557600; Path=/; Expires=Fri, 18 Jun 2021 05:39:36 GMT; HttpOnly; Secure; SameSite=None",
+        "X-RateLimit-Limit": "30",
+        "X-RateLimit-Remaining": "29",
+        "X-RateLimit-Reset": "1592437177",
+        "cache-control": "private, no-store, no-cache, must-revalidate, post-check=0, pre-check=0, no-transform"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]
