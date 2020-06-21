@@ -1,0 +1,9 @@
+{
+  "email": "testuser@example.com",
+  "email_verified": false,
+  "name": "testuser@example.com",
+  "nickname": "testuser",
+  "picture": "https://s.gravatar.com/avatar/7ec7606c46a14a7ef514d1f1f9038823?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Ftu.png",
+  "sub": "auth0|lyy5vutbn9qfmihil7pvpo66",
+  "updated_at": "2020-02-19T12:34:56.784Z"
+}
