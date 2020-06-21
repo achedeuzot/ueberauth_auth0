@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+- Drops support for Elixir 1.4, 1.5 and 1.6
+- Adds integration tests suite
+- `deps` update
+
 ## Version 0.4.0
 
 - Massive `deps` update, mainly `oauth2`.
