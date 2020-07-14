@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+- ...
+
+## Version 0.5.0
+
 - Drops support for Elixir 1.4, 1.5 and 1.6
 - Adds integration tests suite
 - `deps` update
