@@ -39,10 +39,28 @@
     json_library: Poison
   ```
 
+  **or** with per-app config:
+
+  ```elixir
+  config :my_app, Ueberauth,
+    providers: [
+      auth0: {Ueberauth.Strategy.Auth0, [otp_app: :my_app]}
+    ]
+  ```
+
   5. Update your provider configuration:
 
   ```elixir
   config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+    domain: System.get_env("AUTH0_DOMAIN"),
+    client_id: System.get_env("AUTH0_CLIENT_ID"),
+    client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+  ```
+
+  **or** with per-app config:
+
+  ```elixir
+  config :my_app, Ueberauth.Strategy.Auth0.OAuth,
     domain: System.get_env("AUTH0_DOMAIN"),
     client_id: System.get_env("AUTH0_CLIENT_ID"),
     client_secret: System.get_env("AUTH0_CLIENT_SECRET")
@@ -54,6 +72,16 @@
   defmodule MyApp.AuthController do
     use MyApp.Web, :controller
     plug Ueberauth
+    ...
+  end
+  ```
+
+  **or** with per-app config:
+
+  ```elixir
+  defmodule MyApp.AuthController do
+    use MyApp.Web, :controller
+    plug Ueberauth, otp_app: :my_app
     ...
   end
   ```
