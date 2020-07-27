@@ -2,7 +2,12 @@
 
 ## Upcoming
 
-- ...
+## Version 0.6.0
+
+- Adds `%Extra{}` data with all fields from `/userinfo` mapped.
+- BREAKING CHANGE: `locale` data is now stored in the `%Extra{}`
+  field instead of the `%Info{location: ...}` field
+- Bumped dependencies (earmark)
 
 ## Version 0.5.0
 

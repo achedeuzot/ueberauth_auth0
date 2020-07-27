@@ -32,7 +32,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   alias OAuth2.{Client, Error, Response}
   alias Plug.Conn
-  alias Ueberauth.Auth.{Credentials, Info}
+  alias Ueberauth.Auth.{Credentials, Extra, Info}
 
   @doc """
   Handles the redirect to Auth0.
@@ -42,7 +42,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
     opts =
       [scope: scopes, connection: conn.params["connection"]]
-      |> Enum.filter(fn ({_, v}) -> v  end)
+      |> Enum.filter(fn {_, v} -> v end)
       |> Keyword.put(:redirect_uri, callback_url(conn))
       |> with_optional(:audience, conn)
 
@@ -150,19 +150,61 @@ defmodule Ueberauth.Strategy.Auth0 do
   defp token_expired(%{expires_at: _}), do: true
 
   @doc """
+  Populates the extra section of the `Ueberauth.Auth` struct with auth0's
+  additional information from the `/userinfo` user profile.
+  """
+  def extra(conn) do
+    user = conn.private.auth0_user
+
+    %Extra{
+      raw_info: %{
+        middle_name: user["middle_name"],
+        preferred_username: user["preferred_username"],
+        email_verified: user["email_verified"],
+        gender: user["gender"],
+        zoneinfo: user["zoneinfo"],
+        locale: user["locale"],
+        phone_number_verified: user["phone_number_verified"],
+        address: user["address"],
+        updated_at: user["updated_at"],
+        # The app_metadata and user_metadata are not returned by default
+        # but you can still add them using "rules" in auth0 so we're keeping
+        # this here for convenience
+        app_metadata: Map.get(user, "app_metadata", %{}),
+        user_metadata: Map.get(user, "user_metadata", %{})
+      }
+    }
+  end
+
+  @doc """
   Fetches the fields to populate the info section of the `Ueberauth.Auth` struct.
+
+  This field has been changed from 0.5.0 to 0.6.0 to better reflect
+  fields of the OpenID standard claims. Extra fields provided by
+  auth0 are in the `Extra` struct.
   """
   def info(conn) do
     user = conn.private.auth0_user
 
     %Info{
       name: user["name"],
-      nickname: user["nickname"],
-      email: user["email"],
-      location: user["locale"],
       first_name: user["given_name"],
       last_name: user["family_name"],
-      image: user["picture"]
+      nickname: user["nickname"],
+      email: user["email"],
+      # The `locale` auth0 field has been moved to `Extra` to better follow OpenID standard specs.
+      # The `location` field of `Ueberauth.Auth.Info` is intended for location (city, country, ...)
+      # information while the `locale` information returned by auth0 is used for internationalization.
+      # This is no location field in the auth0 response, only an `address`.
+      location: nil,
+      description: nil,
+      image: user["picture"],
+      phone: user["phone_number"],
+      birthday: user["birthdate"],
+      urls: %{
+        profile: user["profile"],
+        website: user["website"]
+      }
     }
   end
 

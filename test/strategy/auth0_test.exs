@@ -6,14 +6,14 @@ defmodule Ueberauth.Strategy.Auth0Test do
   use Plug.Test
 
   # Custom data:
-  import Ueberauth.Strategy.Auth0, only: [info: 1]
-  alias Ueberauth.Auth.Info
+  import Ueberauth.Strategy.Auth0, only: [info: 1, extra: 1]
+  alias Ueberauth.Auth.{Extra, Info}
 
   # Initializing utils:
   doctest Ueberauth.Strategy.Auth0
 
   @router SpecRouter.init([])
-  @test_email "testuser@example.com"
+  @test_email "janedoe@example.com"
 
   # Setups:
   setup_all do
@@ -75,7 +75,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
       assert auth.provider == :auth0
       assert auth.strategy == Ueberauth.Strategy.Auth0
-      assert auth.uid == "auth0|lyy5vutbn9qfmihil7pvpo66"
+      assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
     end
   end
 
@@ -174,16 +174,48 @@ defmodule Ueberauth.Strategy.Auth0Test do
     }
 
     assert info(conn) == %Info{
-             email: @test_email,
-             name: @test_email,
-             first_name: nil,
-             last_name: nil,
-             nickname: "testuser",
-             location: nil,
+             birthday: "1972-03-31",
              description: nil,
-             image:
-               "https://s.gravatar.com/avatar/7ec7606c46a14a7ef514d1f1f9038823?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Ftu.png",
-             urls: %{}
+             email: @test_email,
+             first_name: "Jane",
+             image: "http://example.com/janedoe/me.jpg",
+             last_name: "Doe",
+             location: nil,
+             name: "Jane Josephine Doe",
+             nickname: "JJ",
+             phone: "+1 (111) 222-3434",
+             urls: %{
+               profile: "http://example.com/janedoe",
+               website: "http://example.com"
+             }
+           }
+  end
+
+  test "user extra information parsing", fixtures do
+    user_info = fixtures.user_info
+    token = fixtures.token
+
+    conn = %Plug.Conn{
+      private: %{
+        auth0_user: user_info,
+        auth0_token: token
+      }
+    }
+
+    assert extra(conn) == %Extra{
+             raw_info: %{
+               address: %{"country" => "us"},
+               app_metadata: %{},
+               email_verified: true,
+               gender: "female",
+               locale: "en-US",
+               middle_name: "Josephine",
+               phone_number_verified: false,
+               preferred_username: "j.doe",
+               updated_at: "1556845729",
+               user_metadata: %{},
+               zoneinfo: "America/Los_Angeles"
+             }
            }
   end
 end
