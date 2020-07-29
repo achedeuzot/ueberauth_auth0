@@ -34,36 +34,54 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
     user_info = Jason.decode!(json)
 
-    {:ok, response} =
-      "test/fixtures/auth0_response.html"
+    {:ok, response_basic} =
+      "test/fixtures/auth0_response_basic.html"
       |> Path.expand()
       |> File.read()
 
-    response = String.replace(response, "\n", "")
+    response_basic = String.replace(response_basic, "\n", "")
+
+    {:ok, response_advanced} =
+      "test/fixtures/auth0_response_advanced.html"
+      |> Path.expand()
+      |> File.read()
+
+    response_advanced = String.replace(response_advanced, "\n", "")
 
     {:ok,
      %{
        user_info: user_info,
        token: token,
-       response: response
+       response_basic: response_basic,
+       response_advanced: response_advanced
      }}
   end
 
   # Tests:
-
-  test "request phase", fixtures do
+  test "simple request phase", fixtures do
     conn =
       :get
       |> conn("/auth/auth0")
       |> SpecRouter.call(@router)
 
-    assert conn.resp_body == fixtures.response
+    assert conn.resp_body == fixtures.response_basic
+  end
+
+  test "advanced request phase", fixtures do
+    conn =
+      :get
+      |> conn(
+        "/auth/auth0?scope=profile%20address%20phone&audience=https%3A%2F%2Fexample-app.auth0.com%2Fmfa%2F&state=obscure_custom_value&connection=facebook&unknown_param=should_be_ignored"
+      )
+      |> SpecRouter.call(@router)
+
+    assert conn.resp_body == fixtures.response_advanced
   end
 
   test "default callback phase" do
     query = %{code: "code_abc"} |> URI.encode_query()
 
-    use_cassette "auth0-responses" do
+    use_cassette "auth0-responses", match_requests_on: [:query] do
       conn =
         :get
         |> conn("/auth/auth0/callback?#{query}")
@@ -79,11 +97,31 @@ defmodule Ueberauth.Strategy.Auth0Test do
     end
   end
 
+  test "callback phase with state" do
+    query = %{code: "some_code", state: "custom_state_value"} |> URI.encode_query()
+
+    use_cassette "auth0-responses", match_requests_on: [:query] do
+      conn =
+        :get
+        |> conn("/auth/auth0/callback?#{query}")
+        |> SpecRouter.call(@router)
+
+      assert conn.resp_body == "auth0 callback"
+
+      auth = conn.assigns.ueberauth_auth
+
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
+      assert conn.private.auth0_state == "custom_state_value"
+    end
+  end
+
   test "callback without code" do
     # Empty query
     query = %{} |> URI.encode_query()
 
-    use_cassette "auth0-responses" do
+    use_cassette "auth0-responses", match_requests_on: [:query] do
       conn =
         :get
         |> conn("/auth/auth0/callback?#{query}")
@@ -108,7 +146,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     # Empty query
     query = %{code: "invalid_code"} |> URI.encode_query()
 
-    use_cassette "auth0-invalid-code" do
+    use_cassette "auth0-invalid-code", match_requests_on: [:query] do
       assert_raise(OAuth2.Error, ~r/Server responded with status: 403.*/, fn ->
         :get
         |> conn("/auth/auth0/callback?#{query}")
@@ -121,7 +159,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     # Empty query
     query = %{code: "some_code"} |> URI.encode_query()
 
-    use_cassette "auth0-no-access-token" do
+    use_cassette "auth0-no-access-token", match_requests_on: [:query] do
       conn =
         :get
         |> conn("/auth/auth0/callback?#{query}")
@@ -141,26 +179,6 @@ defmodule Ueberauth.Strategy.Auth0Test do
       assert auth.errors == [missing_code_error]
     end
   end
-
-  # This doesn't work yet, we'll add it when the feature exists
-  #  test "callback phase with state" do
-  #    query = %{code: "code_abc", state: "custom_state_value"} |> URI.encode_query
-  #
-  #    use_cassette "auth0-responses" do
-  #      conn =
-  #        :get
-  #        |> conn("/auth/auth0/callback?#{query}")
-  #        |> SpecRouter.call(@router)
-  #
-  #      assert conn.resp_body == "auth0 callback"
-  #
-  #      auth = conn.assigns.ueberauth_auth
-  #
-  #      assert auth.provider == :auth0
-  #      assert auth.strategy == Ueberauth.Strategy.Auth0
-  #      assert auth.uid == "auth0|lyy5vutbn9qfmihil7pvpo66"
-  #    end
-  #  end
 
   test "user information parsing", fixtures do
     user_info = fixtures.user_info

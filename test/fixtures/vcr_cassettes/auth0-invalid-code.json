@@ -22,16 +22,17 @@
         "Connection": "keep-alive",
         "Server": "nginx",
         "Vary": "Accept-Encoding",
-        "ot-tracer-spanid": "5f4018ed528710ca",
-        "ot-tracer-traceid": "1e9ed8bd1011f221",
+        "ot-tracer-spanid": "<<span id>>",
+        "ot-tracer-traceid": "<<trace id>>",
         "ot-tracer-sampled": "true",
-        "ot-baggage-auth0-request-id": "b105f9bcbad6f804b763ee88",
-        "X-Auth0-RequestId": "aedc633e5adea3be8f49",
-        "Set-Cookie": "did=s%3Av0%3Ace5ff350-b131-11ea-be83-892b118656b2.%2B9lyU8P6x2BabrexQ7tK2sK19C2RkOlnda890p8d9Z0; Max-Age=31557600; Path=/; Expires=Fri, 18 Jun 2021 13:03:26 GMT; HttpOnly; Secure; SameSite=None",
+        "ot-baggage-auth0-request-id": "<<request id>>",
+        "X-Auth0-RequestId": "<<request id>>",
+        "Set-Cookie": "<<cookies>>",
         "X-RateLimit-Limit": "30",
         "X-RateLimit-Remaining": "29",
         "X-RateLimit-Reset": "1592463807",
-        "cache-control": "private, no-store, no-cache, must-revalidate, post-check=0, pre-check=0, no-transform"
+        "cache-control": "private, no-store, no-cache, must-revalidate, post-check=0, pre-check=0, no-transform",
+        "Strict-Transport-Security": "max-age=15724800"
       },
       "status_code": 403,
       "type": "ok"

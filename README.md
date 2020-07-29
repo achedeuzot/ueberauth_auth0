@@ -15,7 +15,7 @@
 
   ```elixir
   def deps do
-    [{:ueberauth_auth0, "~> 0.3"}]
+    [{:ueberauth_auth0, "~> 0.7"}]
   end
   ```
 
@@ -65,6 +65,9 @@
     client_id: System.get_env("AUTH0_CLIENT_ID"),
     client_secret: System.get_env("AUTH0_CLIENT_SECRET")
   ```
+
+  See the `Ueberauth.Strategy.Auth0` module docs for more
+  configuration options.
 
   6. Include the Überauth plug in your controller:
 

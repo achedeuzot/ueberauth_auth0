@@ -1,7 +1,7 @@
 [
   {
     "request": {
-      "body": "client_id=clientidKFpqmR7aO1iVUOQR1LMKbZvk&client_secret=clientsecrethzqAhvWpJhAehfkzupWelgut-hRh7ZYOBOmaXsCRryhy7bqWzOCx&code=code_abc&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback",
+      "body": "client_id=clientidKFpqmR7aO1iVUOQR1LMKbZvk&client_secret=clientsecrethzqAhvWpJhAehfkzupWelgut-hRh7ZYOBOmaXsCRryhy7bqWzOCx&code=some_code&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback",
       "headers": {
         "content-type": "application/x-www-form-urlencoded",
         "accept": "application/json",
@@ -21,12 +21,12 @@
         "Content-Length": "69",
         "Connection": "keep-alive",
         "Server": "nginx",
-        "ot-tracer-spanid": "3085123a49690f22",
-        "ot-tracer-traceid": "2611213f15e78af3",
+        "ot-tracer-spanid": "<<span id>>",
+        "ot-tracer-traceid": "<<trace id>>",
         "ot-tracer-sampled": "true",
-        "ot-baggage-auth0-request-id": "d8916634ed436afe36744f6e",
-        "X-Auth0-RequestId": "1dd455670d641d81c4c8",
-        "Set-Cookie": "did=s%3Av0%3Acd966af0-b0e3-11ea-85ed-0d9365a06bc5.25colYvrl8qxIpnLc4gibEDFW5BvUQ6ryaj0zR1P7zc; Max-Age=31557600; Path=/; Expires=Fri, 18 Jun 2021 05:39:36 GMT; HttpOnly; Secure; SameSite=None",
+        "ot-baggage-auth0-request-id": "<<request id>>",
+        "X-Auth0-RequestId": "<<request id>>",
+        "Set-Cookie": "<<cookies>>",
         "X-RateLimit-Limit": "30",
         "X-RateLimit-Remaining": "29",
         "X-RateLimit-Reset": "1592437177",

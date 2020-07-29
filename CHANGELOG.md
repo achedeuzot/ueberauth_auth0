@@ -2,6 +2,14 @@
 
 ## Upcoming
 
+## Version 0.7.0
+
+- Changes in the accepted params that can be given to the
+  `:request` endpoint: `audience`, `state`, `connection` and
+  `scope`. Corresponding default values have been added to the
+  configuration options.
+- Improved error message on missing configuration.
+
 ## Version 0.6.0
 
 - Adds `%Extra{}` data with all fields from `/userinfo` mapped.
