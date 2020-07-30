@@ -20,7 +20,7 @@
         "Content-Type": "application/json",
         "Content-Length": "144",
         "Connection": "keep-alive",
-        "X-Auth0-RequestId": "1dd41235665d641d81c4c8",
+        "X-Auth0-RequestId": "<<request id>>"
       },
       "status_code": 200,
       "type": "ok"
@@ -47,7 +47,7 @@
         "Content-Length": "144",
         "Connection": "keep-alive",
         "Server": "nginx",
-        "X-Auth0-RequestId": "1dd968479496d641d81c4c8",
+        "X-Auth0-RequestId": "<<request id>>",
         "cache-control": "private, no-store, no-cache, must-revalidate, post-check=0, pre-check=0, no-transform"
       },
       "status_code": 200,

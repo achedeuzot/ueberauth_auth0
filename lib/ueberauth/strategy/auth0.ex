@@ -2,7 +2,8 @@ defmodule Ueberauth.Strategy.Auth0 do
   @moduledoc """
   Provides an Ueberauth strategy for authenticating with Auth0.
 
-  You can edit the behaviour of the Strategy by including some options when you register your provider.
+  You can edit the behaviour of the Strategy by including some options when
+  you register your provider.
 
   To set the `uid_field`
       config :ueberauth, Ueberauth,
@@ -11,23 +12,68 @@ defmodule Ueberauth.Strategy.Auth0 do
         ]
   Default is `:sub`
 
-  To set the default ['scopes'](https://auth0.com/docs/scopes) (permissions):
+  To set the default ['scope'](https://auth0.com/docs/scopes) (permissions):
       config :ueberauth, Ueberauth,
         providers: [
           auth0: { Ueberauth.Strategy.Auth0, [default_scope: "openid profile email"] }
         ]
-  Default is `"openid profile email"`
+  Default is `"openid profile email"`.
 
-  To set the `audience`
+  To set the [`audience`](https://auth0.com/docs/glossary#audience)
       config :ueberauth, Ueberauth,
         providers: [
-          auth0: { Ueberauth.Strategy.Auth0, [audience: "example-audience"] }
+          auth0: { Ueberauth.Strategy.Auth0, [default_audience: "example-audience"] }
         ]
-  Not used by default
+  Not used by default (set to `""`).
+
+  To set the [`connection`](https://auth0.com/docs/identityproviders), mostly useful if
+  you want to use a social identity provider like `facebook` or `google-oauth2`. If empty
+  it will redirect to Auth0's Login widget. See https://auth0.com/docs/api/authentication#social
+      config :ueberauth, Ueberauth,
+        providers: [
+          auth0: { Ueberauth.Strategy.Auth0, [default_connection: "facebook"] }
+        ]
+  Not used by default (set to `""`)
+
+  To set the [`state`](https://auth0.com/docs/protocols/oauth2/oauth-state). This is useful
+  to prevent from CSRF attacks and redirect users to the state before the authentication flow
+  started.
+      config :ueberauth, Ueberauth,
+        providers: [
+          auth0: { Ueberauth.Strategy.Auth0, [default_state: "some-opaque-state"] }
+        ]
+  Not used by default (set to `""`)
+
+  These 4 parameters can also be set in the request to authorization. e.g.
+  You can call the `auth0` authentication endpoint with values:
+  `/auth/auth0?scope="some+new+scope&audience=events:read&connection=facebook&state=opaque_value`
+
+  ## About the `state` param
+  Usually a static `state` value is not very useful so it's best to pass it to
+  the request endpoint as a parameter. You can then read back the state after
+  authentication in a private value set in the connection: `auth0_state`.
+
+  ### Example
+
+      state_signed = Phoenix.Token.sign(MyApp.Endpoint, "return_url", Phoenix.Controller.current_url(conn))
+      Routes.auth_path(conn, :request, "auth0", state: state_signed)
+      # authentication happens ...
+      # the state ends up in `conn.private.auth0_state` after the authentication process
+      {:ok, redirect_to} = Phoenix.Token.verify(MyApp.Endpoint, "return_url", conn.private.auth0_state, max_age: 900)
+
   """
   use Ueberauth.Strategy,
     uid_field: :sub,
     default_scope: "openid profile email",
+    default_state: "",
+    default_audience: "",
+    default_connection: "",
+    allowed_request_params: [
+      :scope,
+      :state,
+      :audience,
+      :connection
+    ],
     oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
   alias OAuth2.{Client, Error, Response}
@@ -38,13 +84,22 @@ defmodule Ueberauth.Strategy.Auth0 do
   Handles the redirect to Auth0.
   """
   def handle_request!(conn) do
-    scopes = conn.params["scope"] || option(conn, :default_scope)
+    allowed_params =
+      conn
+      |> option(:allowed_request_params)
+      |> Enum.map(&to_string/1)
 
     opts =
-      [scope: scopes, connection: conn.params["connection"]]
-      |> Enum.filter(fn {_, v} -> v end)
+      conn.params
+      |> maybe_replace_param(conn, "scope", :default_scope)
+      |> maybe_replace_param(conn, "state", :default_state)
+      |> maybe_replace_param(conn, "audience", :default_audience)
+      |> maybe_replace_param(conn, "connection", :default_connection)
+      |> Enum.filter(fn {k, _} -> Enum.member?(allowed_params, k) end)
+      # Remove empty params
+      |> Enum.reject(fn {_, v} -> blank?(v) end)
+      |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
       |> Keyword.put(:redirect_uri, callback_url(conn))
-      |> with_optional(:audience, conn)
 
     module = option(conn, :oauth2_module)
 
@@ -61,7 +116,8 @@ defmodule Ueberauth.Strategy.Auth0 do
   Handles the callback from Auth0. When there is a failure from Auth0 the failure is included in the
   `ueberauth_failure` struct. Otherwise the information returned from Auth0 is returned in the `Ueberauth.Auth` struct.
   """
-  def handle_callback!(%Conn{params: %{"code" => code}} = conn) do
+  def handle_callback!(%Conn{params: %{"code" => _}} = conn) do
+    {code, state} = parse_params(conn)
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
 
@@ -81,7 +137,7 @@ defmodule Ueberauth.Strategy.Auth0 do
         )
       ])
     else
-      fetch_user(conn, client)
+      fetch_user(conn, client, state)
     end
   end
 
@@ -99,8 +155,11 @@ defmodule Ueberauth.Strategy.Auth0 do
     |> put_private(:auth0_token, nil)
   end
 
-  defp fetch_user(conn, %{token: token} = client) do
-    conn = put_private(conn, :auth0_token, token)
+  defp fetch_user(conn, %{token: token} = client, state) do
+    conn =
+      conn
+      |> put_private(:auth0_token, token)
+      |> put_private(:auth0_state, state)
 
     case Client.get(client, "/userinfo") do
       {:ok, %Response{status_code: 401, body: _body}} ->
@@ -208,11 +267,38 @@ defmodule Ueberauth.Strategy.Auth0 do
     }
   end
 
-  defp with_optional(opts, key, conn) do
-    if option(conn, key), do: Keyword.put(opts, key, option(conn, key)), else: opts
+  defp parse_params(%Plug.Conn{params: %{"code" => code, "state" => state}}) do
+    {code, state}
+  end
+
+  defp parse_params(%Plug.Conn{params: %{"code" => code}}) do
+    {code, nil}
   end
 
   defp option(conn, key) do
-    Keyword.get(options(conn), key, Keyword.get(default_options(), key))
+    default = Keyword.get(default_options(), key)
+
+    conn
+    |> options
+    |> Keyword.get(key, default)
   end
+
+  defp option(nil, conn, key), do: option(conn, key)
+  defp option(value, _conn, _key), do: value
+
+  defp maybe_replace_param(params, conn, name, config_key) do
+    if params[name] do
+      params
+    else
+      Map.put(params, name, option(params[name], conn, config_key))
+    end
+  end
+
+  @compile {:inline, blank?: 1}
+  def blank?(""), do: true
+  def blank?([]), do: true
+  def blank?(nil), do: true
+  def blank?({}), do: true
+  def blank?(%{} = map) when map_size(map) == 0, do: true
+  def blank?(_), do: false
 end

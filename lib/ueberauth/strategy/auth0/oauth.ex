@@ -27,6 +27,13 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
   def options(otp_app) do
     configs = Application.get_env(otp_app || :ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
+    unless configs do
+      raise(
+        "Expected to find settings under `config #{inspect(otp_app)}, Ueberauth.Strategy.Auth0.OAuth`, " <>
+          "got nil. Check your config.exs."
+      )
+    end
+
     domain = get_config_value(configs[:domain])
     client_id = get_config_value(configs[:client_id])
     client_secret = get_config_value(configs[:client_secret])
