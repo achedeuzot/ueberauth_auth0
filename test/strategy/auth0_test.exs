@@ -222,17 +222,28 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
     assert extra(conn) == %Extra{
              raw_info: %{
-               address: %{"country" => "us"},
-               app_metadata: %{},
-               email_verified: true,
-               gender: "female",
-               locale: "en-US",
-               middle_name: "Josephine",
-               phone_number_verified: false,
-               preferred_username: "j.doe",
-               updated_at: "1556845729",
-               user_metadata: %{},
-               zoneinfo: "America/Los_Angeles"
+               user: %{
+                 "address" => %{"country" => "us"},
+                 "birthdate" => "1972-03-31",
+                 "email" => "janedoe@example.com",
+                 "email_verified" => true,
+                 "family_name" => "Doe",
+                 "gender" => "female",
+                 "given_name" => "Jane",
+                 "locale" => "en-US",
+                 "middle_name" => "Josephine",
+                 "name" => "Jane Josephine Doe",
+                 "nickname" => "JJ",
+                 "phone_number" => "+1 (111) 222-3434",
+                 "phone_number_verified" => false,
+                 "picture" => "http://example.com/janedoe/me.jpg",
+                 "preferred_username" => "j.doe",
+                 "profile" => "http://example.com/janedoe",
+                 "sub" => "auth0|lyy5v452u345tbn943qf",
+                 "updated_at" => "1556845729",
+                 "website" => "http://example.com",
+                 "zoneinfo" => "America/Los_Angeles"
+               }
              }
            }
   end
