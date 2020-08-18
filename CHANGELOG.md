@@ -11,6 +11,7 @@
 - The `%Extra{}` field now also contains the raw auth0 token (if you ever
   need it) under `:token` in the `raw_info` map. This better follows other ueberauth
   strategies and can be useful in some cases.
+- Bump dependencies
 
 ## Version 0.7.0
 
