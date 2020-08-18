@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## Version 0.8.1
+- Adds query parameters used for the Universal Login: `screen_hint`,
+  `login_hint` and `prompt`.
+  See https://auth0.com/docs/universal-login/new-experience#signup
+
 ## Version 0.8.0
 
 - BREAKING CHANGE: the `%Extra{}` field now copies the full raw auth0 user into

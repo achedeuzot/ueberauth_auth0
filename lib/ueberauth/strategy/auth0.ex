@@ -68,11 +68,17 @@ defmodule Ueberauth.Strategy.Auth0 do
     default_state: "",
     default_audience: "",
     default_connection: "",
+    default_prompt: "",
+    default_screen_hint: "",
+    default_login_hint: "",
     allowed_request_params: [
       :scope,
       :state,
       :audience,
-      :connection
+      :connection,
+      :prompt,
+      :screen_hint,
+      :login_hint
     ],
     oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
@@ -95,6 +101,9 @@ defmodule Ueberauth.Strategy.Auth0 do
       |> maybe_replace_param(conn, "state", :default_state)
       |> maybe_replace_param(conn, "audience", :default_audience)
       |> maybe_replace_param(conn, "connection", :default_connection)
+      |> maybe_replace_param(conn, "prompt", :default_prompt)
+      |> maybe_replace_param(conn, "screen_hint", :default_screen_hint)
+      |> maybe_replace_param(conn, "login_hint", :default_login_hint)
       |> Enum.filter(fn {k, _} -> Enum.member?(allowed_params, k) end)
       # Remove empty params
       |> Enum.reject(fn {_, v} -> blank?(v) end)
@@ -241,7 +250,7 @@ defmodule Ueberauth.Strategy.Auth0 do
       # The `locale` auth0 field has been moved to `Extra` to better follow OpenID standard specs.
       # The `location` field of `Ueberauth.Auth.Info` is intended for location (city, country, ...)
       # information while the `locale` information returned by auth0 is used for internationalization.
-      # This is no location field in the auth0 response, only an `address`.
+      # There is no location field in the auth0 response, only an `address`.
       location: nil,
       description: nil,
       image: user["picture"],
