@@ -2,6 +2,17 @@
 
 ## Upcoming
 
+## Version 0.8.0
+
+- BREAKING CHANGE: the `%Extra{}` field now copies the full raw auth0 user into
+  `%Extra{raw_info: %{user: auth0_user}}` instead of selected fields. This
+  allows better usage with custom auth0 fields and other end-user customizations.
+  (see PR #136)
+- The `%Extra{}` field now also contains the raw auth0 token (if you ever
+  need it) under `:token` in the `raw_info` map. This better follows other ueberauth
+  strategies and can be useful in some cases.
+- Bump dependencies
+
 ## Version 0.7.0
 
 - Changes in the accepted params that can be given to the
