@@ -222,6 +222,13 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
     assert extra(conn) == %Extra{
              raw_info: %{
+               token: %OAuth2.AccessToken{
+                 access_token: "eyJz93alolk4laUWw",
+                 expires_at: 1_592_551_369,
+                 other_params: %{"id_token" => "eyJ0XAipop4faeEoQ"},
+                 refresh_token: "GEbRxBNkitedjnXbL",
+                 token_type: "Bearer"
+               },
                user: %{
                  "address" => %{"country" => "us"},
                  "birthdate" => "1972-03-31",
