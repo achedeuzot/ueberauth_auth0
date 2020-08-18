@@ -211,7 +211,7 @@ defmodule Ueberauth.Strategy.Auth0 do
   @doc """
   Populates the extra section of the `Ueberauth.Auth` struct with auth0's
   additional information from the `/userinfo` user profile and includes the
-  token recieved from Auth0 callback.
+  token received from Auth0 callback.
   """
   def extra(conn) do
     %Extra{
