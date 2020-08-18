@@ -71,7 +71,9 @@ defmodule Ueberauth.Strategy.Auth0Test do
     conn =
       :get
       |> conn(
-        "/auth/auth0?scope=profile%20address%20phone&audience=https%3A%2F%2Fexample-app.auth0.com%2Fmfa%2F&state=obscure_custom_value&connection=facebook&unknown_param=should_be_ignored"
+        "/auth/auth0?scope=profile%20address%20phone&audience=https%3A%2F%2Fexample-app.auth0.com%2Fmfa%2F" <>
+          "&state=obscure_custom_value&connection=facebook&unknown_param=should_be_ignored" <>
+          "&prompt=login&screen_hint=signup&login_hint=user%40example.com"
       )
       |> SpecRouter.call(@router)
 
