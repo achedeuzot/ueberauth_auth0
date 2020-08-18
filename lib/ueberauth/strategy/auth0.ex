@@ -210,27 +210,14 @@ defmodule Ueberauth.Strategy.Auth0 do
 
   @doc """
   Populates the extra section of the `Ueberauth.Auth` struct with auth0's
-  additional information from the `/userinfo` user profile.
+  additional information from the `/userinfo` user profile and includes the
+  token recieved from Auth0 callback.
   """
   def extra(conn) do
-    user = conn.private.auth0_user
-
     %Extra{
       raw_info: %{
-        middle_name: user["middle_name"],
-        preferred_username: user["preferred_username"],
-        email_verified: user["email_verified"],
-        gender: user["gender"],
-        zoneinfo: user["zoneinfo"],
-        locale: user["locale"],
-        phone_number_verified: user["phone_number_verified"],
-        address: user["address"],
-        updated_at: user["updated_at"],
-        # The app_metadata and user_metadata are not returned by default
-        # but you can still add them using "rules" in auth0 so we're keeping
-        # this here for convenience
-        app_metadata: Map.get(user, "app_metadata", %{}),
-        user_metadata: Map.get(user, "user_metadata", %{})
+        token: conn.private.auth0_token,
+        user: conn.private.auth0_user
       }
     }
   end
