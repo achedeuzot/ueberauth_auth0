@@ -4,7 +4,7 @@
 
 ![Auth0 logo](https://github.com/achedeuzot/ueberauth_auth0/blob/master/media/auth0-logo.png)
 
-[![Build Status](https://img.shields.io/travis/achedeuzot/ueberauth_auth0/master.svg)](https://travis-ci.org/achedeuzot/ueberauth_auth0) [![Coverage Status](https://coveralls.io/repos/github/achedeuzot/ueberauth_auth0/badge.svg?branch=master)](https://coveralls.io/github/achedeuzot/ueberauth_auth0?branch=master) [![Hex Version](https://img.shields.io/hexpm/v/ueberauth_auth0.svg)](https://hex.pm/packages/ueberauth_auth0) [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/achedeuzot/ueberauth_auth0/workflows/tests/badge.svg)](https://github.com/achedeuzot/ueberauth_auth0/actions?query=workflow%3Atests+branch%3Amaster) [![Coverage Status](https://coveralls.io/repos/github/achedeuzot/ueberauth_auth0/badge.svg?branch=master)](https://coveralls.io/github/achedeuzot/ueberauth_auth0?branch=master) [![Hex Version](https://img.shields.io/hexpm/v/ueberauth_auth0.svg)](https://hex.pm/packages/ueberauth_auth0) [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 
 ## Installation
