@@ -1,7 +1,7 @@
 defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
-  @version "0.8.1"
+  @version "0.8.2"
 
   def project do
     [
@@ -33,7 +33,7 @@ defmodule UeberauthAuth0.Mixfile do
 
       # Type checking
       dialyzer: [
-        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+        plt_core_path: "_build/#{Mix.env()}"
       ]
     ]
   end
