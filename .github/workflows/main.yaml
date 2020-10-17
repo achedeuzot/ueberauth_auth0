@@ -1,0 +1,67 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+name: tests
+
+env:
+  MIX_ENV: test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      fail-fast: true
+      matrix:
+        otp: ["19.3", "20.3", "21.3", "22.3", "23.1"]
+        elixir: ["1.7.4", "1.8.2", "1.9.4", "1.10.4", "1.11.1"]
+        exclude:
+          - otp: "23.1"
+            elixir: "1.7.4"
+          - otp: "19.3"
+            elixir: "1.8.2"
+          - otp: "23.1"
+            elixir: "1.8.2"
+          - otp: "19.3"
+            elixir: "1.9.4"
+          - otp: "23.1"
+            elixir: "1.9.4"
+          - otp: "19.3"
+            elixir: "1.10.4"
+          - otp: "20.3"
+            elixir: "1.10.4"
+          - otp: "23.1"
+            elixir: "1.10.4"
+          - otp: "19.3"
+            elixir: "1.11.1"
+          - otp: "20.3"
+            elixir: "1.11.1"
+    env:
+      MIX_ENV: test
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Cache deps
+        uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-deps-${{ matrix.otp }}-${{ matrix.elixir }}-
+      - name: Cache build
+        uses: actions/cache@v2
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-
+      - run: mix deps.get
+      - run: mix compile --warnings-as-errors
+      - run: mix credo --strict
+      - run: mix coveralls.github
+      - run: mix dialyzer
