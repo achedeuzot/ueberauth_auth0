@@ -32,7 +32,10 @@ defmodule UeberauthAuth0.Mixfile do
       # Type checking
       dialyzer: [
         plt_core_path: "_build/#{Mix.env()}"
-      ]
+      ],
+
+      aliases: aliases(),
+      elixirc_paths: elixirc_paths(Mix.env)
     ]
   end
 
@@ -51,8 +54,8 @@ defmodule UeberauthAuth0.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
 
       # Testing:
-      {:exvcr, "~> 0.10", only: :test},
-      {:excoveralls, "~> 0.11", only: :test},
+      {:exvcr, "~> 0.10", only: [:test, :test_with_config_from]},
+      {:excoveralls, "~> 0.11", only: [:test, :test_with_config_from]},
 
       # Type checking
       {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
@@ -89,4 +92,39 @@ defmodule UeberauthAuth0.Mixfile do
       }
     ]
   end
+
+  defp aliases do
+    [
+      {:"test.all", [&run_tests/1, &run_tests_with_config_from/1]}
+    ]
+  end
+
+  defp run_tests(_) do
+    IO.puts("""
+    \n#
+    # Running tests with DEFAULT configurations.
+    #\n
+    """)
+
+    Mix.shell.cmd(
+      "mix test --color",
+      env: [{"MIX_ENV", "test"}]
+    )
+  end
+
+  defp run_tests_with_config_from(_) do
+    IO.puts("""
+    \n#
+    # Running tests with COMPUTED configurations.
+    #\n
+    """)
+
+    Mix.shell.cmd(
+      "mix test --color",
+      env: [{"MIX_ENV", "test_with_config_from"}]
+    )
+  end
+
+  defp elixirc_paths(:test_with_config_from), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end
