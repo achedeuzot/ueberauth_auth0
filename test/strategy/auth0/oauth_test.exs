@@ -1,12 +1,13 @@
 defmodule Ueberauth.Strategy.Auth0.OAuthTest do
   use ExUnit.Case
 
-  import Ueberauth.Strategy.Auth0.OAuth, only: [client: 0, client: 1]
+  import Ueberauth.Strategy.Auth0.OAuth, only: [client: 1, client: 2]
 
   @test_domain "example-app.auth0.com"
 
   setup do
-    {:ok, %{client: client()}}
+    conn = %Plug.Conn{}
+    {:ok, %{client: client(conn)}}
   end
 
   test "creates correct client", %{client: client} do
@@ -21,7 +22,8 @@ defmodule Ueberauth.Strategy.Auth0.OAuthTest do
 
   test "raises when there is no configuration" do
     assert_raise(RuntimeError, ~r/^Expected to find settings under.*/, fn ->
-      client(otp_app: :unknown_auth0_otp_app)
+      conn = %Plug.Conn{}
+      client(conn, otp_app: :unknown_auth0_otp_app)
     end)
   end
 end
