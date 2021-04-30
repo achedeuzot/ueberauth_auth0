@@ -16,29 +16,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: ["19.3", "20.3", "21.3", "22.3", "23.1"]
-        elixir: ["1.7.4", "1.8.2", "1.9.4", "1.10.4", "1.11.1"]
+        otp: ["20.3", "21.3", "22.3", "23.3"]
+        elixir: ["1.7.4", "1.8.2", "1.9.4", "1.10.4", "1.11.3"]
         exclude:
-          - otp: "23.1"
+          - otp: "23.3"
             elixir: "1.7.4"
-          - otp: "19.3"
+          - otp: "23.3"
             elixir: "1.8.2"
-          - otp: "23.1"
-            elixir: "1.8.2"
-          - otp: "19.3"
+          - otp: "23.3"
             elixir: "1.9.4"
-          - otp: "23.1"
-            elixir: "1.9.4"
-          - otp: "19.3"
-            elixir: "1.10.4"
           - otp: "20.3"
             elixir: "1.10.4"
-          - otp: "23.1"
+          - otp: "23.3"
             elixir: "1.10.4"
-          - otp: "19.3"
-            elixir: "1.11.1"
           - otp: "20.3"
-            elixir: "1.11.1"
+            elixir: "1.11.3"
     env:
       MIX_ENV: test
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
