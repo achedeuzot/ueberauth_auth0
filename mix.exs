@@ -32,7 +32,8 @@ defmodule UeberauthAuth0.Mixfile do
       # Type checking
       dialyzer: [
         plt_core_path: "_build/#{Mix.env()}"
-      ]
+      ],
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -51,8 +52,8 @@ defmodule UeberauthAuth0.Mixfile do
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
 
       # Testing:
-      {:exvcr, "~> 0.10", only: :test},
-      {:excoveralls, "~> 0.11", only: :test},
+      {:exvcr, "~> 0.10", only: [:test]},
+      {:excoveralls, "~> 0.11", only: [:test]},
 
       # Type checking
       {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
@@ -89,4 +90,7 @@ defmodule UeberauthAuth0.Mixfile do
       }
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/configs"]
+  defp elixirc_paths(_), do: ["lib"]
 end
