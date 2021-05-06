@@ -1,6 +1,6 @@
 # This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
+# and its dependencies with the aid of the Config module.
+import Config
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
@@ -27,15 +27,5 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-#     import_config "#{Mix.env}.exs"
-
-case Mix.env do
-  :test ->
-    import_config "test.exs"
-
-  :test_with_config_from ->
-    import_config "test_with_config_from.exs"
-
-  _ ->
-    nil
-end
+#     import_config "#{config_env()}.exs"
+if config_env() == :test, do: import_config("test.exs")
