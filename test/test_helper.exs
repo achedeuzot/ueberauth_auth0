@@ -19,8 +19,6 @@ defmodule SpecRouter do
 
   plug(Ueberauth, base_path: "/auth")
 
-
-
   plug(:match)
   plug(:dispatch)
 
