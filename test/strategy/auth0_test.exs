@@ -39,26 +39,10 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
     user_info = Jason.decode!(json)
 
-    {:ok, response_basic} =
-      "test/fixtures/auth0_response_basic.html"
-      |> Path.expand()
-      |> File.read()
-
-    response_basic = String.replace(response_basic, "\n", "")
-
-    {:ok, response_advanced} =
-      "test/fixtures/auth0_response_advanced.html"
-      |> Path.expand()
-      |> File.read()
-
-    response_advanced = String.replace(response_advanced, "\n", "")
-
     {:ok,
      %{
        user_info: user_info,
-       token: token,
-       response_basic: response_basic,
-       response_advanced: response_advanced
+       token: token
      }}
   end
 
