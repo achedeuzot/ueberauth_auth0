@@ -65,7 +65,6 @@ defmodule Ueberauth.Strategy.Auth0 do
   use Ueberauth.Strategy,
     uid_field: :sub,
     default_scope: "openid profile email",
-    default_state: "",
     default_audience: "",
     default_connection: "",
     default_prompt: "",
@@ -98,12 +97,12 @@ defmodule Ueberauth.Strategy.Auth0 do
     opts =
       conn.params
       |> maybe_replace_param(conn, "scope", :default_scope)
-      |> maybe_replace_param(conn, "state", :default_state)
       |> maybe_replace_param(conn, "audience", :default_audience)
       |> maybe_replace_param(conn, "connection", :default_connection)
       |> maybe_replace_param(conn, "prompt", :default_prompt)
       |> maybe_replace_param(conn, "screen_hint", :default_screen_hint)
       |> maybe_replace_param(conn, "login_hint", :default_login_hint)
+      |> Map.put("state", conn.private[:ueberauth_state_param])
       |> Enum.filter(fn {k, _} -> Enum.member?(allowed_params, k) end)
       # Remove empty params
       |> Enum.reject(fn {_, v} -> blank?(v) end)

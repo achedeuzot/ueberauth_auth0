@@ -14,6 +14,11 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
   @router SpecRouter.init([])
   @test_email "janedoe@example.com"
+  @session_options Plug.Session.init(
+                     store: Plug.Session.COOKIE,
+                     key: "_hello_key",
+                     signing_salt: "CXlmrshG"
+                   )
 
   # Setups:
   setup_all do
@@ -58,35 +63,66 @@ defmodule Ueberauth.Strategy.Auth0Test do
   end
 
   # Tests:
-  test "simple request phase", fixtures do
+  test "simple request phase" do
     conn =
       :get
       |> conn("/auth/auth0")
       |> SpecRouter.call(@router)
 
-    assert conn.resp_body == fixtures.response_basic
+    assert conn.resp_body =~ ~s|<html><body>You are being <a href=|
+    assert conn.resp_body =~ ~s|>redirected</a>.</body></html>|
+    assert conn.resp_body =~ ~s|href="https://example-app.auth0.com/authorize?|
+    assert conn.resp_body =~ ~s|client_id=clientidsomethingrandom|
+    assert conn.resp_body =~ ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+    assert conn.resp_body =~ ~s|response_type=code|
+    assert conn.resp_body =~ ~s|scope=openid+profile+email|
+    assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
   end
 
-  test "advanced request phase", fixtures do
+  test "advanced request phase" do
     conn =
       :get
       |> conn(
         "/auth/auth0?scope=profile%20address%20phone&audience=https%3A%2F%2Fexample-app.auth0.com%2Fmfa%2F" <>
-          "&state=obscure_custom_value&connection=facebook&unknown_param=should_be_ignored" <>
+          "&connection=facebook&unknown_param=should_be_ignored" <>
           "&prompt=login&screen_hint=signup&login_hint=user%40example.com"
       )
       |> SpecRouter.call(@router)
 
-    assert conn.resp_body == fixtures.response_advanced
+    assert conn.resp_body =~ ~s|<html><body>You are being <a href=|
+    assert conn.resp_body =~ ~s|>redirected</a>.</body></html>|
+    assert conn.resp_body =~ ~s|href="https://example-app.auth0.com/authorize?|
+    assert conn.resp_body =~ ~s|client_id=clientidsomethingrandom|
+    assert conn.resp_body =~ ~s|connection=facebook|
+    assert conn.resp_body =~ ~s|login_hint=user|
+    assert conn.resp_body =~ ~s|screen_hint=signup|
+    assert conn.resp_body =~ ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+    assert conn.resp_body =~ ~s|response_type=code|
+    assert conn.resp_body =~ ~s|scope=profile+address+phone|
+    assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
   end
 
   test "default callback phase" do
-    query = %{code: "code_abc"} |> URI.encode_query()
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
+    code = "some_code"
 
     use_cassette "auth0-responses", match_requests_on: [:query] do
       conn =
         :get
-        |> conn("/auth/auth0/callback?#{query}")
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: code,
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
       assert conn.resp_body == "auth0 callback"
@@ -96,37 +132,29 @@ defmodule Ueberauth.Strategy.Auth0Test do
       assert auth.provider == :auth0
       assert auth.strategy == Ueberauth.Strategy.Auth0
       assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
-    end
-  end
-
-  test "callback phase with state" do
-    query = %{code: "some_code", state: "custom_state_value"} |> URI.encode_query()
-
-    use_cassette "auth0-responses", match_requests_on: [:query] do
-      conn =
-        :get
-        |> conn("/auth/auth0/callback?#{query}")
-        |> SpecRouter.call(@router)
-
-      assert conn.resp_body == "auth0 callback"
-
-      auth = conn.assigns.ueberauth_auth
-
-      assert auth.provider == :auth0
-      assert auth.strategy == Ueberauth.Strategy.Auth0
-      assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
-      assert conn.private.auth0_state == "custom_state_value"
+      assert conn.private.auth0_state == state
     end
   end
 
   test "callback without code" do
-    # Empty query
-    query = %{} |> URI.encode_query()
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
 
     use_cassette "auth0-responses", match_requests_on: [:query] do
       conn =
         :get
-        |> conn("/auth/auth0/callback?#{query}")
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
       assert conn.resp_body == "auth0 callback"
@@ -145,26 +173,50 @@ defmodule Ueberauth.Strategy.Auth0Test do
   end
 
   test "callback with invalid code" do
-    # Empty query
-    query = %{code: "invalid_code"} |> URI.encode_query()
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
 
     use_cassette "auth0-invalid-code", match_requests_on: [:query] do
       assert_raise(OAuth2.Error, ~r/Server responded with status: 403.*/, fn ->
         :get
-        |> conn("/auth/auth0/callback?#{query}")
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: "invalid_code",
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
       end)
     end
   end
 
   test "callback with no token in response" do
-    # Empty query
-    query = %{code: "some_code"} |> URI.encode_query()
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
 
     use_cassette "auth0-no-access-token", match_requests_on: [:query] do
       conn =
         :get
-        |> conn("/auth/auth0/callback?#{query}")
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: "some_code",
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
       assert conn.resp_body == "auth0 callback"

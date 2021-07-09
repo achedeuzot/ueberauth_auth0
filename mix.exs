@@ -44,7 +44,7 @@ defmodule UeberauthAuth0.Mixfile do
 
   defp deps do
     [
-      {:ueberauth, "~> 0.6"},
+      {:ueberauth, "~> 0.7"},
       {:oauth2, "~> 2.0"},
 
       # Docs:
