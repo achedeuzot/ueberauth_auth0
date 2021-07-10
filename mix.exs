@@ -38,7 +38,7 @@ defmodule UeberauthAuth0.Mixfile do
 
   def application do
     [
-      applications: [:logger, :ueberauth, :oauth2]
+      extra_applications: [:logger]
     ]
   end
 
@@ -80,7 +80,7 @@ defmodule UeberauthAuth0.Mixfile do
     [
       name: :ueberauth_auth0,
       description: "An Ueberauth strategy for using Auth0 to authenticate your users.",
-      files: ["lib", "mix.exs", "README.md", "LICENSE"],
+      files: ["lib", "mix.exs", "README.md", "LICENSE.md"],
       maintainers: ["Son Tran-Nguyen", "Nikita Sobolev", "Klemen Sever"],
       licenses: ["MIT"],
       links: %{
