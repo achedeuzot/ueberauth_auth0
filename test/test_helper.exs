@@ -9,7 +9,7 @@ defmodule SpecRouter do
 
   @session_options [
     store: :cookie,
-    key: "_hello_key",
+    key: "_my_key",
     signing_salt: "CXlmrshG"
   ]
 

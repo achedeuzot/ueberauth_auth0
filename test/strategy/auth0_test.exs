@@ -16,7 +16,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
   @test_email "janedoe@example.com"
   @session_options Plug.Session.init(
                      store: Plug.Session.COOKIE,
-                     key: "_hello_key",
+                     key: "_my_key",
                      signing_salt: "CXlmrshG"
                    )
 
