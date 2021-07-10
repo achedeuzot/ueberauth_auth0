@@ -2,7 +2,7 @@ defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/achedeuzot/ueberauth_auth0"
-  @version "0.8.2"
+  @version "1.0.0"
 
   def project do
     [
