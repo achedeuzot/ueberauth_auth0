@@ -7,6 +7,14 @@ defmodule SpecRouter do
   require Ueberauth
   use Plug.Router
 
+  @session_options [
+    store: :cookie,
+    key: "_hello_key",
+    signing_salt: "CXlmrshG"
+  ]
+
+  plug(Plug.Session, @session_options)
+
   plug(:fetch_query_params)
 
   plug(Ueberauth, base_path: "/auth")
