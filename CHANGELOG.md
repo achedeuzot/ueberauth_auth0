@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v1.0.0 - 2020-07-10
+
+- BREAKING CHANGE: bump `ueberauth` to `0.7.0` which provides default CSRF protection.
+  In exchange for this new default protection, the `state` field is used by `ueberauth`
+  to store the CSRF token.
+- Documentation improvements
+
 ## v0.8.1 - 2020-08-18
 
 - Adds query parameters used for the Universal Login: `screen_hint`,
