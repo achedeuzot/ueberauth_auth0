@@ -166,18 +166,24 @@ defmodule Ueberauth.Strategy.Auth0Test do
     state = request_conn.private[:ueberauth_state_param]
 
     use_cassette "auth0-invalid-code", match_requests_on: [:query] do
-      assert_raise(OAuth2.Error, ~r/Server responded with status: 403.*/, fn ->
+      conn =
         :get
-        |> conn("/auth/auth0/callback",
-          id: "foo",
-          code: "invalid_code",
-          state: state
-        )
+        |> conn("/auth/auth0/callback", id: "foo", code: "invalid_code", state: state)
         |> Map.put(:cookies, request_conn.cookies)
         |> Map.put(:req_cookies, request_conn.req_cookies)
         |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
-      end)
+
+      auth = conn.assigns.ueberauth_failure
+
+      invalid_grant_error = %Ueberauth.Failure.Error{
+        message: "Invalid authorization code",
+        message_key: "invalid_grant"
+      }
+
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.errors == [invalid_grant_error]
     end
   end
 
