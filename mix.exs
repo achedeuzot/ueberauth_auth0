@@ -2,7 +2,7 @@ defmodule UeberauthAuth0.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/achedeuzot/ueberauth_auth0"
-  @version "1.0.0"
+  @version "1.0.1"
 
   def project do
     [
@@ -38,7 +38,7 @@ defmodule UeberauthAuth0.Mixfile do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:jose, :cachex, :logger]
     ]
   end
 
@@ -46,6 +46,12 @@ defmodule UeberauthAuth0.Mixfile do
     [
       {:ueberauth, "~> 0.7"},
       {:oauth2, "~> 2.0"},
+
+      # JWT validation
+      {:cachex, "~> 3.4"},
+      {:jose, "~> 1.11"},
+      {:mojito, "~> 0.7.7"},
+      {:jason, "~> 1.1"},
 
       # Docs:
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},

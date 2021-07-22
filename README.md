@@ -111,7 +111,19 @@
 
 For an example implementation see the [Überauth Example](https://github.com/ueberauth/ueberauth_example) application.
 
+## JWT validation
 
+By default JWTs presented by Auth0 are not verified.
+
+In order to validate the signature of the JWT, the `cachex_cache_id` option must be set to a valid [Cachex](https://github.com/whitfin/cachex) cache ID.
+
+The easiest way is to just add a Cachex cache to your application's supervision children list:
+
+```Supervisor.child_spec({Cachex, name: :ueberauth_auth0}, id: :ueberauth_auth0)```
+
+This must be done in the primary application.
+
+If the `cachex_cache_id` option is not set, validation will not be done.
 ## Copyright and License
 
 Copyright (c) 2015 Son Tran-Nguyen \
