@@ -19,6 +19,13 @@ defmodule Ueberauth.Strategy.Auth0 do
         ]
   Default is `"openid profile email"`.
 
+  To set the [`cachex_cache_id`](https://auth0.com/docs/glossary#cachex_cache_id)
+      config :ueberauth, Ueberauth,
+        providers: [
+          auth0: { Ueberauth.Strategy.Auth0, [cachex_cache_id: :example_cachex_id] }
+        ]
+  Not used by default (set to `""`).
+
   To set the [`audience`](https://auth0.com/docs/glossary#audience)
       config :ueberauth, Ueberauth,
         providers: [
@@ -84,6 +91,7 @@ defmodule Ueberauth.Strategy.Auth0 do
   alias OAuth2.{Client, Error, Response}
   alias Plug.Conn
   alias Ueberauth.Auth.{Credentials, Extra, Info}
+  alias Ueberauth.Strategy.Auth0.Token
 
   @doc """
   Handles the redirect to Auth0.
@@ -128,30 +136,55 @@ defmodule Ueberauth.Strategy.Auth0 do
     {code, state} = parse_params(conn)
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
-
+    otp_app = option(conn, :otp_app)
     client =
       apply(module, :get_token!, [
         [code: code, redirect_uri: redirect_uri],
-        [otp_app: option(conn, :otp_app)]
+        [otp_app: otp_app]
       ])
 
     token = client.token
-
-    if token.access_token == nil do
-      set_errors!(conn, [
-        error(
-          token.other_params["error"],
-          token.other_params["error_description"]
-        )
-      ])
+    with {:token_validation, {:ok, _}} <- {:token_validation, Token.validation(otp_app, client)},
+      {:nil_token_check, {:ok, nil}} <- {:nil_token_check, nil_token_check(token)},
+      {:auth0, {:ok, %Response{status_code: status_code, body: user}}} when status_code in 200..399 <- {:auth0, Client.get(client, "/userinfo")}
+    do
+      conn
+      |> put_private(:auth0_user, user)
+      |> put_private(:auth0_token, token)
+      |> put_private(:auth0_state, state)
     else
-      fetch_user(conn, client, state)
+      {:token_validation, err} ->
+        error = "token_validation"
+
+        set_errors!(conn, [error(error, err)])
+      {:nil_token_check, _err} ->
+        error = token.other_params["error"]
+        error_description = token.other_params["error_description"]
+
+        set_errors!(conn, [error(error, error_description)])
+
+      {:auth0, {:ok, %Response{status_code: 401, body: _body}}} ->
+        set_errors!(conn, [error("token", "unauthorized")])
+      {:auth0, {:error, %Response{body: body}}} ->
+        set_errors!(conn, [error("OAuth2", body)])
+      {:auth0, {:error, %Error{reason: reason}}} ->
+        set_errors!(conn, [error("OAuth2", reason)])
+
     end
   end
 
   @doc false
   def handle_callback!(conn) do
     set_errors!(conn, [error("missing_code", "No code received")])
+  end
+
+  defp nil_token_check(token) do
+    case token.access_token do
+      nil ->
+        {:error, :no_token}
+      _ ->
+        {:ok, nil}
+      end
   end
 
   @doc """
@@ -161,28 +194,6 @@ defmodule Ueberauth.Strategy.Auth0 do
     conn
     |> put_private(:auth0_user, nil)
     |> put_private(:auth0_token, nil)
-  end
-
-  defp fetch_user(conn, %{token: token} = client, state) do
-    conn =
-      conn
-      |> put_private(:auth0_token, token)
-      |> put_private(:auth0_state, state)
-
-    case Client.get(client, "/userinfo") do
-      {:ok, %Response{status_code: 401, body: _body}} ->
-        set_errors!(conn, [error("token", "unauthorized")])
-
-      {:ok, %Response{status_code: status_code, body: user}}
-      when status_code in 200..399 ->
-        put_private(conn, :auth0_user, user)
-
-      {:error, %Response{body: body}} ->
-        set_errors!(conn, [error("OAuth2", body)])
-
-      {:error, %Error{reason: reason}} ->
-        set_errors!(conn, [error("OAuth2", reason)])
-    end
   end
 
   @doc """
