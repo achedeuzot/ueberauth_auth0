@@ -1,14 +1,25 @@
 defmodule Ueberauth.Strategy.Auth0.Token do
 
-  def validation(otp_app, client) do
+  def maybe_validation(otp_app, client) do
+    configs = Application.get_env(otp_app || :ueberauth, Ueberauth.Strategy.Auth0.OAuth)
+    jwks_cache_id = Keyword.get(configs, :cachex_cache_id, nil)
+
+    case jwks_cache_id do
+      nil ->
+        # no validation. automatic success.
+        {:ok, nil}
+      jwks_cache_id ->
+        # full validation
+        validation(jwks_cache_id, client)
+      end
+    end
+
+  defp validation(jwks_cache_id, client) do
     # full JWT validation
     # see the following jose issue on validation
     # https://github.com/potatosalad/erlang-jose/issues/28
 
-    configs = Application.get_env(otp_app || :ueberauth, Ueberauth.Strategy.Auth0.OAuth)
-
     base_url = client.site
-    jwks_cache_id = Keyword.get(configs, :cachex_cache_id, nil)
 
     # we want the raw JWT rather than the parsed result
 
@@ -57,11 +68,6 @@ defmodule Ueberauth.Strategy.Auth0.Token do
       |> Enum.map(fn k = %JOSE.JWK{fields: %{"alg" => alg, "kid" => kid}} -> {{alg, kid}, k} end)
       |> Enum.into(%{})
     {:ok, keys_by_alg_kid}
-  end
-
-  defp jwks(nil, site_url) do
-    # no caching JWKS data in cachex
-    jwks_fetch(site_url)
   end
 
   defp jwks(cache_id, site_url) do

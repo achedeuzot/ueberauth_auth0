@@ -137,6 +137,7 @@ defmodule Ueberauth.Strategy.Auth0 do
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
     otp_app = option(conn, :otp_app)
+
     client =
       apply(module, :get_token!, [
         [code: code, redirect_uri: redirect_uri],
@@ -144,7 +145,8 @@ defmodule Ueberauth.Strategy.Auth0 do
       ])
 
     token = client.token
-    with {:token_validation, {:ok, _}} <- {:token_validation, Token.validation(otp_app, client)},
+
+    with {:token_validation, {:ok, _}} <- {:token_validation, Token.maybe_validation(otp_app, client)},
       {:nil_token_check, {:ok, nil}} <- {:nil_token_check, nil_token_check(token)},
       {:auth0, {:ok, %Response{status_code: status_code, body: user}}} when status_code in 200..399 <- {:auth0, Client.get(client, "/userinfo")}
     do
