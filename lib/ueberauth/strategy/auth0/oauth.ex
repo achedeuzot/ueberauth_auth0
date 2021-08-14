@@ -97,7 +97,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
       |> Keyword.get(:client_options, [])
       |> Keyword.merge(otp_app: otp_app)
 
-    Client.get_token!(client(client_options), params, headers, opts)
+    Client.get_token(client(client_options), params, headers, opts)
   end
 
   # Strategy Callbacks

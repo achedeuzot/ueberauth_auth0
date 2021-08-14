@@ -129,23 +129,29 @@ defmodule Ueberauth.Strategy.Auth0 do
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
 
-    client =
+    result =
       apply(module, :get_token!, [
         [code: code, redirect_uri: redirect_uri],
         [otp_app: option(conn, :otp_app)]
       ])
 
-    token = client.token
+    case result do
+      {:ok, client} ->
+        token = client.token
 
-    if token.access_token == nil do
-      set_errors!(conn, [
-        error(
-          token.other_params["error"],
-          token.other_params["error_description"]
-        )
-      ])
-    else
-      fetch_user(conn, client, state)
+        if token.access_token == nil do
+          set_errors!(conn, [
+            error(
+              token.other_params["error"],
+              token.other_params["error_description"]
+            )
+          ])
+        else
+          fetch_user(conn, client, state)
+        end
+
+      {:error, client} ->
+        set_errors!(conn, [error(client.body["error"], client.body["error_description"])])
     end
   end
 
