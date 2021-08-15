@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v2.0.0 - 2021-08-14
+
+- BREAKING CHANGE: changed error management on wrong OAuth code.
+  Instead of raising a `OAuth2.Error`, the `conn.assigns.ueberauth_failure`
+  is set with the following value:
+  ```elixir
+  %Ueberauth.Failure.Error{
+    message: "Invalid authorization code",
+    message_key: "invalid_grant"
+  }
+  ```
+- Bumped dependencies
+
 ## v1.0.0 - 2020-07-10
 
 - BREAKING CHANGE: bump `ueberauth` to `0.7.0` which provides default CSRF protection.
