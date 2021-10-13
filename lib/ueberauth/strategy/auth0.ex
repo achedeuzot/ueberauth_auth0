@@ -120,7 +120,7 @@ defmodule Ueberauth.Strategy.Auth0 do
         [otp_app: option(conn, :otp_app)]
       ])
 
-    IO.inspect(callback_url, label: "*** ueberauth - handle_request - url")
+    #IO.inspect(callback_url, label: "*** ueberauth - handle_request - url")
 
     redirect!(conn, callback_url)
   end
