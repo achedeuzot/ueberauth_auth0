@@ -70,6 +70,7 @@ defmodule Ueberauth.Strategy.Auth0 do
     default_prompt: "",
     default_screen_hint: "",
     default_login_hint: "",
+    default_organization: "",
     allowed_request_params: [
       :scope,
       :state,
@@ -77,7 +78,8 @@ defmodule Ueberauth.Strategy.Auth0 do
       :connection,
       :prompt,
       :screen_hint,
-      :login_hint
+      :login_hint,
+      :organization
     ],
     oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
@@ -102,6 +104,7 @@ defmodule Ueberauth.Strategy.Auth0 do
       |> maybe_replace_param(conn, "prompt", :default_prompt)
       |> maybe_replace_param(conn, "screen_hint", :default_screen_hint)
       |> maybe_replace_param(conn, "login_hint", :default_login_hint)
+      |> maybe_replace_param(conn, "organization", :default_organization)
       |> Map.put("state", conn.private[:ueberauth_state_param])
       |> Enum.filter(fn {k, _} -> Enum.member?(allowed_params, k) end)
       # Remove empty params
