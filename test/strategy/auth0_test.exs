@@ -70,7 +70,9 @@ defmodule Ueberauth.Strategy.Auth0Test do
         "/auth/auth0?scope=profile%20address%20phone&audience=https%3A%2F%2Fexample-app.auth0.com%2Fmfa%2F" <>
           "&connection=facebook&unknown_param=should_be_ignored" <>
           "&prompt=login&screen_hint=signup&login_hint=user%40example.com" <>
-          "&organization=org_abc123"
+          "&organization=org_abc123" <>
+          "&organization_name=Org+ABC" <>
+          "&invitation=b8galwfFB8W2UzSQhNttjhI4nyPwdpWT"
       )
       |> SpecRouter.call(@router)
 
@@ -86,6 +88,8 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|scope=profile+address+phone|
     assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
     assert conn.resp_body =~ ~s|organization=org_abc123|
+    assert conn.resp_body =~ ~s|organization_name=Org+ABC|
+    assert conn.resp_body =~ ~s|invitation=b8galwfFB8W2UzSQhNttjhI4nyPwdpWT|
   end
 
   test "default callback phase" do
