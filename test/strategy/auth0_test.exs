@@ -47,7 +47,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
   end
 
   # Tests:
-  test "simple request phase" do
+  test "simple oauth2 /authorize request" do
     conn =
       :get
       |> conn("/auth/auth0")
@@ -63,7 +63,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
   end
 
-  test "advanced request phase" do
+  test "advanced oauth2 /authorize request" do
     conn =
       :get
       |> conn(
@@ -89,7 +89,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|invitation=INVITE2022|
   end
 
-  test "default callback phase" do
+  test "nominal callback from auth0" do
     request_conn =
       :get
       |> conn("/auth/auth0", id: "foo")
@@ -99,7 +99,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     state = request_conn.private[:ueberauth_state_param]
     code = "some_code"
 
-    use_cassette "auth0-responses", match_requests_on: [:query] do
+    use_cassette "auth0-ok-response", match_requests_on: [:query] do
       conn =
         :get
         |> conn("/auth/auth0/callback",
@@ -120,10 +120,51 @@ defmodule Ueberauth.Strategy.Auth0Test do
       assert auth.strategy == Ueberauth.Strategy.Auth0
       assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
       assert conn.private.auth0_state == state
+
+      ## Tokens have expiration time (see other test below)
+      assert auth.credentials.expires == true
+      assert is_integer(auth.credentials.expires_at)
     end
   end
 
-  test "callback without code" do
+  test "nominal callback from auth0 but without state: potential CSRF attack" do
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    code = "some_code"
+
+    use_cassette "auth0-ok-response", match_requests_on: [:query] do
+      conn =
+        :get
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: code
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
+        |> SpecRouter.call(@router)
+
+        assert conn.resp_body == "auth0 callback"
+
+      auth = conn.assigns.ueberauth_failure
+      assert conn.private[:auth0_state] == nil
+
+      csrf_attack = %Ueberauth.Failure.Error{
+        message: "Cross-Site Request Forgery attack",
+        message_key: "csrf_attack",
+      }
+
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.errors == [csrf_attack]
+    end
+  end
+
+  test "invalid callback from auth0 without code" do
     request_conn =
       :get
       |> conn("/auth/auth0", id: "foo")
@@ -132,7 +173,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
     state = request_conn.private[:ueberauth_state_param]
 
-    use_cassette "auth0-responses", match_requests_on: [:query] do
+    use_cassette "auth0-ok-response", match_requests_on: [:query] do
       conn =
         :get
         |> conn("/auth/auth0/callback",
@@ -159,7 +200,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     end
   end
 
-  test "callback with invalid code" do
+  test "invalid callback from auth0 with invalid code" do
     request_conn =
       :get
       |> conn("/auth/auth0", id: "foo")
@@ -190,7 +231,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     end
   end
 
-  test "callback with no token in response" do
+  test "invalid callback from auth0 with no token in response" do
     request_conn =
       :get
       |> conn("/auth/auth0", id: "foo")
@@ -224,6 +265,120 @@ defmodule Ueberauth.Strategy.Auth0Test do
       assert auth.provider == :auth0
       assert auth.strategy == Ueberauth.Strategy.Auth0
       assert auth.errors == [missing_code_error]
+    end
+  end
+
+  test "callback from auth0 with no expiration time of tokens" do
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
+
+    use_cassette "auth0-token-doesnt-expire", match_requests_on: [:query] do
+      conn =
+        :get
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: "some_code",
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
+        |> SpecRouter.call(@router)
+
+        assert conn.resp_body == "auth0 callback"
+
+        auth = conn.assigns.ueberauth_auth
+
+        # Same information as default token
+        assert auth.provider == :auth0
+        assert auth.strategy == Ueberauth.Strategy.Auth0
+        assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
+        assert conn.private.auth0_state == state
+
+        ## Difference here
+        assert auth.credentials.expires == false
+        assert auth.credentials.expires_at == nil
+    end
+  end
+
+  test "/userinfo call with unauthorized access token" do
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
+    code = "some_code"
+
+    use_cassette "auth0-userinfo-invalid-access-token", match_requests_on: [:query] do
+      conn =
+        :get
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: code,
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
+        |> SpecRouter.call(@router)
+
+        assert conn.resp_body == "auth0 callback"
+
+        auth = conn.assigns.ueberauth_failure
+
+        token_unauthorized = %Ueberauth.Failure.Error{
+          message: "unauthorized_token",
+          message_key: "OAuth2"
+        }
+
+        assert auth.provider == :auth0
+        assert auth.strategy == Ueberauth.Strategy.Auth0
+        assert auth.errors == [token_unauthorized]
+    end
+  end
+
+  test "/userinfo call with body containing error details" do
+    request_conn =
+      :get
+      |> conn("/auth/auth0", id: "foo")
+      |> SpecRouter.call(@router)
+      |> Plug.Conn.fetch_cookies()
+
+    state = request_conn.private[:ueberauth_state_param]
+    code = "some_code"
+
+    use_cassette "auth0-userinfo-with-errors-in-body", match_requests_on: [:query] do
+      conn =
+        :get
+        |> conn("/auth/auth0/callback",
+          id: "foo",
+          code: code,
+          state: state
+        )
+        |> Map.put(:cookies, request_conn.cookies)
+        |> Map.put(:req_cookies, request_conn.req_cookies)
+        |> Plug.Session.call(@session_options)
+        |> SpecRouter.call(@router)
+
+        assert conn.resp_body == "auth0 callback"
+
+        auth = conn.assigns.ueberauth_failure
+
+        some_error_in_body = %Ueberauth.Failure.Error{
+          message: %{"error" => "something_wrong", "error_description" => "Something went wrong"},
+          message_key: "OAuth2"
+        }
+
+        assert auth.provider == :auth0
+        assert auth.strategy == Ueberauth.Strategy.Auth0
+        assert auth.errors == [some_error_in_body]
     end
   end
 
