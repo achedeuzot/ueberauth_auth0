@@ -10,7 +10,7 @@ defmodule UeberauthAuth0.Mixfile do
       version: @version,
       name: "Ueberauth Auth0",
       package: package(),
-      elixir: "~> 1.7",
+      elixir: "~> 1.10",
       deps: deps(),
       docs: docs(),
       build_embedded: Mix.env() == :prod,
@@ -44,7 +44,7 @@ defmodule UeberauthAuth0.Mixfile do
 
   defp deps do
     [
-      {:ueberauth, "~> 0.7"},
+      {:ueberauth, "~> 0.10"},
       {:oauth2, "~> 2.0"},
 
       # Docs:
