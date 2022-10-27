@@ -111,6 +111,8 @@
 
 For an example implementation see the [Überauth Example](https://github.com/ueberauth/ueberauth_example) application.
 
+## Learn about OAuth2
+[OAuth2 explained with cute shapes](https://engineering.backmarket.com/oauth2-explained-with-cute-shapes-7eae51f20d38)
 
 ## Copyright and License
 
