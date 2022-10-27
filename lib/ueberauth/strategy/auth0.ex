@@ -71,6 +71,8 @@ defmodule Ueberauth.Strategy.Auth0 do
     default_screen_hint: "",
     default_login_hint: "",
     default_organization: "",
+    # See https://auth0.com/docs/manage-users/organizations/configure-organizations/invite-members#specify-route-behavior
+    default_invitation: "",
     allowed_request_params: [
       :scope,
       :state,
@@ -79,7 +81,8 @@ defmodule Ueberauth.Strategy.Auth0 do
       :prompt,
       :screen_hint,
       :login_hint,
-      :organization
+      :organization,
+      :invitation
     ],
     oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
@@ -105,6 +108,7 @@ defmodule Ueberauth.Strategy.Auth0 do
       |> maybe_replace_param(conn, "screen_hint", :default_screen_hint)
       |> maybe_replace_param(conn, "login_hint", :default_login_hint)
       |> maybe_replace_param(conn, "organization", :default_organization)
+      |> maybe_replace_param(conn, "invitation", :default_invitation)
       |> Map.put("state", conn.private[:ueberauth_state_param])
       |> Enum.filter(fn {k, _} -> Enum.member?(allowed_params, k) end)
       # Remove empty params
