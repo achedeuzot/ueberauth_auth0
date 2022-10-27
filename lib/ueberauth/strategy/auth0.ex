@@ -175,12 +175,12 @@ defmodule Ueberauth.Strategy.Auth0 do
       |> put_private(:auth0_state, state)
 
     case Client.get(client, "/userinfo") do
-      {:ok, %Response{status_code: 401, body: _body}} ->
-        set_errors!(conn, [error("token", "unauthorized")])
-
       {:ok, %Response{status_code: status_code, body: user}}
       when status_code in 200..399 ->
         put_private(conn, :auth0_user, user)
+
+      {:error, %Response{status_code: 401, body: _body}} ->
+        set_errors!(conn, [error("OAuth2", "unauthorized_token")])
 
       {:error, %Response{body: body}} ->
         set_errors!(conn, [error("OAuth2", body)])
