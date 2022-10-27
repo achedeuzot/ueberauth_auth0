@@ -55,7 +55,7 @@ defmodule UeberauthAuth0.Mixfile do
       {:excoveralls, "~> 0.11", only: :test},
 
       # Type checking
-      {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
 
       # Lint:
       {:credo, "~> 1.1", only: [:dev, :test]}
