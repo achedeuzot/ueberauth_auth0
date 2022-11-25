@@ -142,6 +142,7 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
       %Plug.Conn{} = conn when not is_nil(configs) ->
         with module when not is_nil(module) <-
                Keyword.get(configs, :config_from),
+             {:loaded, {:module, _module}} <- {:loaded, Code.ensure_loaded(module)},
              {:exported, true} <- {:exported, function_exported?(module, :get_domain, 1)},
              {:exported, true} <- {:exported, function_exported?(module, :get_client_id, 1)},
              {:exported, true} <- {:exported, function_exported?(module, :get_client_secret, 1)} do
@@ -152,6 +153,11 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
             client_secret: apply(module, :get_client_secret, [conn])
           )
         else
+          {:loaded, {:error, :nofile}} ->
+            raise("""
+            Couldn't load module from `:config_from`
+            """)
+
           {:exported, false} ->
             raise("""
             When using `:config_from`, the given module should export 3 functions:

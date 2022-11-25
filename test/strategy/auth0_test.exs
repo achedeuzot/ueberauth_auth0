@@ -57,7 +57,10 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|>redirected</a>.</body></html>|
     assert conn.resp_body =~ ~s|href="https://example-app.auth0.com/authorize?|
     assert conn.resp_body =~ ~s|client_id=clientidsomethingrandom|
-    assert conn.resp_body =~ ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+
+    assert conn.resp_body =~
+             ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+
     assert conn.resp_body =~ ~s|response_type=code|
     assert conn.resp_body =~ ~s|scope=openid+profile+email|
     assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
@@ -81,7 +84,10 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|connection=facebook|
     assert conn.resp_body =~ ~s|login_hint=user|
     assert conn.resp_body =~ ~s|screen_hint=signup|
-    assert conn.resp_body =~ ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+
+    assert conn.resp_body =~
+             ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
+
     assert conn.resp_body =~ ~s|response_type=code|
     assert conn.resp_body =~ ~s|scope=profile+address+phone|
     assert conn.resp_body =~ ~s|state=#{conn.private[:ueberauth_state_param]}|
@@ -148,14 +154,14 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
-        assert conn.resp_body == "auth0 callback"
+      assert conn.resp_body == "auth0 callback"
 
       auth = conn.assigns.ueberauth_failure
       assert conn.private[:auth0_state] == nil
 
       csrf_attack = %Ueberauth.Failure.Error{
         message: "Cross-Site Request Forgery attack",
-        message_key: "csrf_attack",
+        message_key: "csrf_attack"
       }
 
       assert auth.provider == :auth0
@@ -290,19 +296,19 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
-        assert conn.resp_body == "auth0 callback"
+      assert conn.resp_body == "auth0 callback"
 
-        auth = conn.assigns.ueberauth_auth
+      auth = conn.assigns.ueberauth_auth
 
-        # Same information as default token
-        assert auth.provider == :auth0
-        assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
-        assert conn.private.auth0_state == state
+      # Same information as default token
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
+      assert conn.private.auth0_state == state
 
-        ## Difference here
-        assert auth.credentials.expires == false
-        assert auth.credentials.expires_at == nil
+      ## Difference here
+      assert auth.credentials.expires == false
+      assert auth.credentials.expires_at == nil
     end
   end
 
@@ -329,18 +335,18 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
-        assert conn.resp_body == "auth0 callback"
+      assert conn.resp_body == "auth0 callback"
 
-        auth = conn.assigns.ueberauth_failure
+      auth = conn.assigns.ueberauth_failure
 
-        token_unauthorized = %Ueberauth.Failure.Error{
-          message: "unauthorized_token",
-          message_key: "OAuth2"
-        }
+      token_unauthorized = %Ueberauth.Failure.Error{
+        message: "unauthorized_token",
+        message_key: "OAuth2"
+      }
 
-        assert auth.provider == :auth0
-        assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.errors == [token_unauthorized]
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.errors == [token_unauthorized]
     end
   end
 
@@ -367,18 +373,18 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Session.call(@session_options)
         |> SpecRouter.call(@router)
 
-        assert conn.resp_body == "auth0 callback"
+      assert conn.resp_body == "auth0 callback"
 
-        auth = conn.assigns.ueberauth_failure
+      auth = conn.assigns.ueberauth_failure
 
-        some_error_in_body = %Ueberauth.Failure.Error{
-          message: %{"error" => "something_wrong", "error_description" => "Something went wrong"},
-          message_key: "OAuth2"
-        }
+      some_error_in_body = %Ueberauth.Failure.Error{
+        message: %{"error" => "something_wrong", "error_description" => "Something went wrong"},
+        message_key: "OAuth2"
+      }
 
-        assert auth.provider == :auth0
-        assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.errors == [some_error_in_body]
+      assert auth.provider == :auth0
+      assert auth.strategy == Ueberauth.Strategy.Auth0
+      assert auth.errors == [some_error_in_body]
     end
   end
 
