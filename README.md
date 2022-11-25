@@ -88,6 +88,7 @@
       def get_client_secret(%Plug.Conn{} = conn) do
         ...
       end
+    end
     ```
 
     ```elixir
