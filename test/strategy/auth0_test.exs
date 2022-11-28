@@ -56,7 +56,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|<html><body>You are being <a href=|
     assert conn.resp_body =~ ~s|>redirected</a>.</body></html>|
     assert conn.resp_body =~ ~s|href="https://example-app.auth0.com/authorize?|
-    assert conn.resp_body =~ ~s|client_id=clientidsomethingrandom|
+    assert conn.resp_body =~ ~s|client_id=example-client-id|
 
     assert conn.resp_body =~
              ~s|redirect_uri=http%3A%2F%2Fwww.example.com%2Fauth%2Fauth0%2Fcallback|
@@ -80,7 +80,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     assert conn.resp_body =~ ~s|<html><body>You are being <a href=|
     assert conn.resp_body =~ ~s|>redirected</a>.</body></html>|
     assert conn.resp_body =~ ~s|href="https://example-app.auth0.com/authorize?|
-    assert conn.resp_body =~ ~s|client_id=clientidsomethingrandom|
+    assert conn.resp_body =~ ~s|client_id=example-client-id|
     assert conn.resp_body =~ ~s|connection=facebook|
     assert conn.resp_body =~ ~s|login_hint=user|
     assert conn.resp_body =~ ~s|screen_hint=signup|

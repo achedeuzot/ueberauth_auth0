@@ -150,17 +150,12 @@ defmodule Ueberauth.Strategy.Auth0.OAuth do
           )
         else
           {:loaded, {:error, :nofile}} ->
-            raise("""
-            Couldn't load module from `:config_from`
-            """)
+            raise("Couldn't load module from `:config_from`")
 
           {:exported, false} ->
-            raise("""
-            When using `:config_from`, the given module should export 3 functions:
-            - `get_domain/1`
-            - `get_client_id/1`
-            - `get_client_secret/1`
-            """)
+            raise(
+              "When using `:config_from`, the given module should export 3 functions: `get_domain/1`, `get_client_id/1` and `get_client_secret/1`"
+            )
 
           # Used base configuration.
           _ ->
