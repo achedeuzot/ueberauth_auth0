@@ -118,7 +118,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
     module = option(conn, :oauth2_module)
 
-    callback_url = module.authorize_url!(opts, otp_app: option(conn, :otp_app))
+    callback_url = module.authorize_url!(conn, opts, otp_app: option(conn, :otp_app))
 
     redirect!(conn, callback_url)
   end
@@ -133,7 +133,9 @@ defmodule Ueberauth.Strategy.Auth0 do
     redirect_uri = callback_url(conn)
 
     result =
-      module.get_token!([code: code, redirect_uri: redirect_uri], otp_app: option(conn, :otp_app))
+      module.get_token!(conn, [code: code, redirect_uri: redirect_uri],
+        otp_app: option(conn, :otp_app)
+      )
 
     case result do
       {:ok, client} ->
