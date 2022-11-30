@@ -73,6 +73,29 @@
       client_secret: System.get_env("AUTH0_CLIENT_SECRET")
     ```
 
+    **or** with computed configurations:
+
+    ```elixir
+    defmodule MyApp.ConfigFrom do
+      def get_domain(%Plug.Conn{} = conn) do
+        ...
+      end
+
+      def get_client_id(%Plug.Conn{} = conn) do
+        ...
+      end
+
+      def get_client_secret(%Plug.Conn{} = conn) do
+        ...
+      end
+    end
+    ```
+
+    ```elixir
+    config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+      config_from: MyApp.ConfigFrom
+    ```
+
     See the `Ueberauth.Strategy.Auth0` module docs for more
     configuration options.
 
