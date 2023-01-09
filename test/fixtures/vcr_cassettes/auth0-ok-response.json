@@ -14,7 +14,7 @@
     },
     "response": {
       "binary": false,
-      "body": "{\"access_token\":\"eyJz93alolk4laUWw\",\"refresh_token\":\"GEbRxBNkitedjnXbL\",\"id_token\":\"eyJ0XAipop4faeEoQ\",\"token_type\":\"Bearer\",\"expires_in\":86400}",
+      "body": "{\"access_token\":\"eyJz93alolk4laUWw\",\"refresh_token\":\"GEbRxBNkitedjnXbL\",\"id_token\":\"eyJ0XAipop4faeEoQ\",\"token_type\":\"Bearer\",\"expires_in\":86400,\"scope\":\"openid profile email\"}",
       "headers": {
         "Date": "Wed, 17 Jun 2020 23:39:36 GMT",
         "Content-Type": "application/json",

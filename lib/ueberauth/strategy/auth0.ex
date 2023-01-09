@@ -205,7 +205,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
     scopes =
       (token.other_params["scope"] || "")
-      |> String.split(",")
+      |> String.split(" ")
 
     %Credentials{
       token: token.access_token,

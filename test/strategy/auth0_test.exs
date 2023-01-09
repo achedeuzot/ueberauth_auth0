@@ -124,6 +124,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
       ## Tokens have expiration time (see other test below)
       assert auth.credentials.expires == true
       assert is_integer(auth.credentials.expires_at)
+      assert auth.credentials.scopes == ["openid", "profile", "email"]
     end
   end
 
