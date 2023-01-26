@@ -19,6 +19,12 @@ defmodule Ueberauth.Strategy.Auth0Test do
                      key: "_my_key",
                      signing_salt: "CXlmrshG"
                    )
+  @id_token_payload "test/fixtures/auth0.json"
+                    |> Path.expand()
+                    |> File.read!()
+                    |> Jason.decode!()
+                    |> Jason.encode!()
+                    |> Base.encode64(padding: false)
 
   # Setups:
   setup_all do
@@ -26,7 +32,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
     token = %OAuth2.AccessToken{
       access_token: "eyJz93alolk4laUWw",
       expires_at: 1_592_551_369,
-      other_params: %{"id_token" => "eyJ0XAipop4faeEoQ"},
+      other_params: %{"id_token" => "header.#{@id_token_payload}.signature"},
       refresh_token: "GEbRxBNkitedjnXbL",
       token_type: "Bearer"
     }
@@ -133,7 +139,6 @@ defmodule Ueberauth.Strategy.Auth0Test do
         ## Tokens have expiration time (see other test below)
         assert auth.credentials.expires == true
         assert is_integer(auth.credentials.expires_at)
-        assert auth.credentials.scopes == ["openid", "profile", "email"]
       end
     end
 
@@ -207,6 +212,42 @@ defmodule Ueberauth.Strategy.Auth0Test do
         assert auth.provider == :auth0
         assert auth.strategy == Ueberauth.Strategy.Auth0
         assert auth.errors == [missing_code_error]
+      end
+    end
+
+    test "invalid callback from auth0 with invalid id_token payload" do
+      request_conn =
+        :get
+        |> conn("/auth/auth0", id: "foo")
+        |> SpecRouter.call(@router)
+        |> Plug.Conn.fetch_cookies()
+
+      state = request_conn.private[:ueberauth_state_param]
+      code = "some_code"
+
+      use_cassette "auth0-invalid-id-token", match_requests_on: [:query] do
+        conn =
+          :get
+          |> conn("/auth/auth0/callback",
+            id: "foo",
+            code: code,
+            state: state
+          )
+          |> Map.put(:cookies, request_conn.cookies)
+          |> Map.put(:req_cookies, request_conn.req_cookies)
+          |> Plug.Session.call(@session_options)
+          |> SpecRouter.call(@router)
+
+        auth = conn.assigns.ueberauth_failure
+
+        invalid_grant_error = %Ueberauth.Failure.Error{
+          message: "Subject (sub) claim must be a string present in the ID token",
+          message_key: "invalid_id_token"
+        }
+
+        assert auth.provider == :auth0
+        assert auth.strategy == Ueberauth.Strategy.Auth0
+        assert auth.errors == [invalid_grant_error]
       end
     end
 
@@ -317,82 +358,6 @@ defmodule Ueberauth.Strategy.Auth0Test do
     end
   end
 
-  test "/userinfo call with unauthorized access token" do
-    request_conn =
-      :get
-      |> conn("/auth/auth0", id: "foo")
-      |> SpecRouter.call(@router)
-      |> Plug.Conn.fetch_cookies()
-
-    state = request_conn.private[:ueberauth_state_param]
-    code = "some_code"
-
-    use_cassette "auth0-userinfo-invalid-access-token", match_requests_on: [:query] do
-      conn =
-        :get
-        |> conn("/auth/auth0/callback",
-          id: "foo",
-          code: code,
-          state: state
-        )
-        |> Map.put(:cookies, request_conn.cookies)
-        |> Map.put(:req_cookies, request_conn.req_cookies)
-        |> Plug.Session.call(@session_options)
-        |> SpecRouter.call(@router)
-
-      assert conn.resp_body == "auth0 callback"
-
-      auth = conn.assigns.ueberauth_failure
-
-      token_unauthorized = %Ueberauth.Failure.Error{
-        message: "unauthorized_token",
-        message_key: "OAuth2"
-      }
-
-      assert auth.provider == :auth0
-      assert auth.strategy == Ueberauth.Strategy.Auth0
-      assert auth.errors == [token_unauthorized]
-    end
-  end
-
-  test "/userinfo call with body containing error details" do
-    request_conn =
-      :get
-      |> conn("/auth/auth0", id: "foo")
-      |> SpecRouter.call(@router)
-      |> Plug.Conn.fetch_cookies()
-
-    state = request_conn.private[:ueberauth_state_param]
-    code = "some_code"
-
-    use_cassette "auth0-userinfo-with-errors-in-body", match_requests_on: [:query] do
-      conn =
-        :get
-        |> conn("/auth/auth0/callback",
-          id: "foo",
-          code: code,
-          state: state
-        )
-        |> Map.put(:cookies, request_conn.cookies)
-        |> Map.put(:req_cookies, request_conn.req_cookies)
-        |> Plug.Session.call(@session_options)
-        |> SpecRouter.call(@router)
-
-      assert conn.resp_body == "auth0 callback"
-
-      auth = conn.assigns.ueberauth_failure
-
-      some_error_in_body = %Ueberauth.Failure.Error{
-        message: %{"error" => "something_wrong", "error_description" => "Something went wrong"},
-        message_key: "OAuth2"
-      }
-
-      assert auth.provider == :auth0
-      assert auth.strategy == Ueberauth.Strategy.Auth0
-      assert auth.errors == [some_error_in_body]
-    end
-  end
-
   describe "info/1" do
     test "user information parsing", fixtures do
       user_info = fixtures.user_info
@@ -441,7 +406,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
                  token: %OAuth2.AccessToken{
                    access_token: "eyJz93alolk4laUWw",
                    expires_at: 1_592_551_369,
-                   other_params: %{"id_token" => "eyJ0XAipop4faeEoQ"},
+                   other_params: %{"id_token" => "header.#{@id_token_payload}.signature"},
                    refresh_token: "GEbRxBNkitedjnXbL",
                    token_type: "Bearer"
                  },

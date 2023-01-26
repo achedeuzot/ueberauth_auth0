@@ -14,7 +14,7 @@
     },
     "response": {
       "binary": false,
-      "body": "{\"access_token\":\"eyJz93alolk4laUWw\",\"refresh_token\":\"GEbRxBNkitedjnXbL\",\"id_token\":\"header.eyJhdWQiOiI4dW1jRldrNEF0NzNKSXZHNXRaajlwb0tPT21YTDNkaCIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJleHAiOjE2NzQ3Njk5MTgsImZhbWlseV9uYW1lIjoiU3RhcmsiLCJnaXZlbl9uYW1lIjoiVG9ueSIsImlhdCI6MTY3NDE4OTkxMCwiaXNzIjoiaHR0cHM6Ly9leGFtcGxlLWFwcC5hdXRoMC5jb20vIiwibmFtZSI6InRlc3RAZXhhbXBsZS5jb20iLCJuaWNrbmFtZSI6InRlc3QuZXhhbXBsZSIsInBpY3R1cmUiOiJodHRwczovL2V4YW1wbGUuY29tL3BpY3R1cmUucG5nIiwic2lkIjoiZHBDQTJiSDgxWXZfanIzcFdHOFhKUlREaVFadlVOTWIiLCJzdWIiOiJhdXRoMHxseXk1djV1dGI2bjlxZm00aWhpM2w3cHYzNHBvNjYiLCJ1cGRhdGVkX2F0IjoiMjAyMy0wMS0yNlQxMTo1MDozMS42NTJaIn0.signature\",\"token_type\":\"Bearer\",\"expires_in\":86400}",
+      "body": "{\"access_token\":\"eyJz93alolk4laUWw\",\"refresh_token\":\"GEbRxBNkitedjnXbL\",\"id_token\":\"header.eyJhdWQiOiI4dW1jRldrNEF0NzNKSXZHNXRaajlwb0tPT21YTDNkaCIsImVtYWlsIjoiamFuZWRvZUBleGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJleHAiOjE2NzQ3Njk5MTgsImZhbWlseV9uYW1lIjoiRG9lIiwiZ2l2ZW5fbmFtZSI6IkphbmUiLCJpYXQiOjE2NzQxODk5MTAsImlzcyI6Imh0dHBzOi8vZXhhbXBsZS1hcHAuYXV0aDAuY29tLyIsIm5hbWUiOiJKYW5lIEpvc2VwaGluZSBEb2UiLCJuaWNrbmFtZSI6IkpKIiwicGljdHVyZSI6Imh0dHA6Ly9leGFtcGxlLmNvbS9qYW5lZG9lL21lLmpwZyIsInNpZCI6ImRwQ0EyYkg4MVl2X2pyM3BXRzhYSlJURGlRWnZVTk1iIiwidXBkYXRlZF9hdCI6IjIwMjAtMDEtMDFUMDA6MDA6MDAuMDAxWiJ9.signature\",\"token_type\":\"Bearer\",\"expires_in\":86400}",
       "headers": {
         "Date": "Wed, 17 Jun 2020 23:39:36 GMT",
         "Content-Type": "application/json",
@@ -40,17 +40,17 @@
     },
     "response": {
       "binary": false,
-      "body": "{\"error\":\"something_wrong\",\"error_description\":\"Something went wrong\"}",
+      "body": "{\"email\":\"testuser@example.com\",\"email_verified\":false,\"name\":\"testuser@example.com\",\"nickname\":\"testuser\",\"picture\":\"https://s.gravatar.com/avatar/7ec7606c46a14a7ef514d1f1f9038823?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Ftu.png\",\"sub\":\"auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66\",\"updated_at\":\"2020-02-19T12:34:56.784Z\"}",
       "headers": {
         "Date": "Wed, 17 Jun 2020 23:39:36 GMT",
         "Content-Type": "application/json",
-        "Content-Length": "70",
+        "Content-Length": "144",
         "Connection": "keep-alive",
         "Server": "nginx",
         "X-Auth0-RequestId": "<<request id>>",
         "cache-control": "private, no-store, no-cache, must-revalidate, post-check=0, pre-check=0, no-transform"
       },
-      "status_code": 401,
+      "status_code": 200,
       "type": "ok"
     }
   }
