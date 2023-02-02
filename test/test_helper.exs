@@ -27,4 +27,10 @@ defmodule SpecRouter do
   get("/auth/auth0/callback", do: send_resp(conn, 200, "auth0 callback"))
 end
 
+defmodule SpecSignerModule do
+  def get do
+    Joken.Signer.create("HS256", "super-secret-secret")
+  end
+end
+
 ExUnit.start()

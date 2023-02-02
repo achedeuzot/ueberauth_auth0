@@ -86,7 +86,6 @@ defmodule Ueberauth.Strategy.Auth0 do
     ],
     oauth2_module: Ueberauth.Strategy.Auth0.OAuth
 
-  alias OAuth2.{Client, Error, Response}
   alias Plug.Conn
   alias Ueberauth.Auth.{Credentials, Extra, Info}
 
@@ -118,7 +117,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
     module = option(conn, :oauth2_module)
 
-    callback_url = module.authorize_url!(opts, [otp_app: option(conn, :otp_app)])
+    callback_url = module.authorize_url!(opts, otp_app: option(conn, :otp_app))
 
     redirect!(conn, callback_url)
   end
@@ -132,7 +131,8 @@ defmodule Ueberauth.Strategy.Auth0 do
     module = option(conn, :oauth2_module)
     redirect_uri = callback_url(conn)
 
-    result = module.get_token!([code: code, redirect_uri: redirect_uri], [otp_app: option(conn, :otp_app)])
+    result =
+      module.get_token!([code: code, redirect_uri: redirect_uri], otp_app: option(conn, :otp_app))
 
     case result do
       {:ok, client} ->
@@ -146,7 +146,10 @@ defmodule Ueberauth.Strategy.Auth0 do
             )
           ])
         else
-          fetch_user(conn, client, state)
+          conn
+          |> put_private(:auth0_token, client.token)
+          |> put_private(:auth0_state, state)
+          |> verify_token_and_put_private(client)
         end
 
       {:error, client} ->
@@ -168,25 +171,21 @@ defmodule Ueberauth.Strategy.Auth0 do
     |> put_private(:auth0_token, nil)
   end
 
-  defp fetch_user(conn, %{token: token} = client, state) do
-    conn =
-      conn
-      |> put_private(:auth0_token, token)
-      |> put_private(:auth0_state, state)
+  defp verify_token_and_put_private(conn, %{token: %{other_params: %{"id_token" => id_token}}}) do
+    signer_module = option(conn, :signer_module)
+    signer = signer_module.get()
 
-    case Client.get(client, "/userinfo") do
-      {:ok, %Response{status_code: status_code, body: user}}
-      when status_code in 200..399 ->
+    case Joken.Signer.verify(id_token, signer) do
+      {:ok, user} ->
         put_private(conn, :auth0_user, user)
 
-      {:error, %Response{status_code: 401, body: _body}} ->
-        set_errors!(conn, [error("OAuth2", "unauthorized_token")])
-
-      {:error, %Response{body: body}} ->
-        set_errors!(conn, [error("OAuth2", body)])
-
-      {:error, %Error{reason: reason}} ->
-        set_errors!(conn, [error("OAuth2", reason)])
+      {:error, _error} ->
+        set_errors!(conn, [
+          error(
+            "failed_token_verification",
+            "Could not validate token"
+          )
+        ])
     end
   end
 
@@ -279,7 +278,7 @@ defmodule Ueberauth.Strategy.Auth0 do
     default = Keyword.get(default_options(), key)
 
     conn
-    |> options
+    |> options()
     |> Keyword.get(key, default)
   end
 

@@ -3,7 +3,7 @@ use Mix.Config
 config :ueberauth, Ueberauth,
   json_library: Jason,
   providers: [
-    auth0: {Ueberauth.Strategy.Auth0, []}
+    auth0: {Ueberauth.Strategy.Auth0, [signer_module: SpecSignerModule]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
