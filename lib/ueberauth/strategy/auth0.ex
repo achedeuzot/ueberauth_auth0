@@ -149,7 +149,7 @@ defmodule Ueberauth.Strategy.Auth0 do
           conn
           |> put_private(:auth0_token, client.token)
           |> put_private(:auth0_state, state)
-          |> parse_user_and_put_private(client)
+          |> verify_token_and_put_private(client)
         end
 
       {:error, client} ->
@@ -171,25 +171,21 @@ defmodule Ueberauth.Strategy.Auth0 do
     |> put_private(:auth0_token, nil)
   end
 
-  defp parse_user_and_put_private(conn, %{
-         serializers: serializers,
-         token: %{other_params: %{"id_token" => id_token}}
-       }) do
-    %{"application/json" => json_library} = serializers
+  defp verify_token_and_put_private(conn, %{token: %{other_params: %{"id_token" => id_token}}}) do
+    signer_module = option(conn, :signer_module)
+    signer = signer_module.get()
 
-    [_header, payload, _signature] = String.split(id_token, ".")
-    user = payload |> Base.decode64!(padding: false) |> json_library.decode!()
+    case Joken.Signer.verify(id_token, signer) do
+      {:ok, user} ->
+        put_private(conn, :auth0_user, user)
 
-    if Map.has_key?(user, "sub") do
-      conn
-      |> put_private(:auth0_user, user)
-    else
-      set_errors!(conn, [
-        error(
-          "invalid_id_token",
-          "Subject (sub) claim must be a string present in the ID token"
-        )
-      ])
+      {:error, _error} ->
+        set_errors!(conn, [
+          error(
+            "failed_token_verification",
+            "Could not validate token"
+          )
+        ])
     end
   end
 
@@ -282,7 +278,7 @@ defmodule Ueberauth.Strategy.Auth0 do
     default = Keyword.get(default_options(), key)
 
     conn
-    |> options
+    |> options()
     |> Keyword.get(key, default)
   end
 

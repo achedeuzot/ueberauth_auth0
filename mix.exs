@@ -46,6 +46,7 @@ defmodule UeberauthAuth0.Mixfile do
     [
       {:ueberauth, "~> 0.10"},
       {:oauth2, "~> 2.0"},
+      {:joken, "~> 2.5"},
 
       # Docs:
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},

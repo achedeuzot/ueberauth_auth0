@@ -19,35 +19,51 @@ defmodule Ueberauth.Strategy.Auth0Test do
                      key: "_my_key",
                      signing_salt: "CXlmrshG"
                    )
-  @id_token_payload "test/fixtures/auth0.json"
-                    |> Path.expand()
-                    |> File.read!()
-                    |> Jason.decode!()
-                    |> Jason.encode!()
-                    |> Base.encode64(padding: false)
+
+  @user_id "auth0|lyy5v452u345tbn943qf"
+
+  @user_info %{
+    "sub" => @user_id,
+    "name" => "Jane Josephine Doe",
+    "given_name" => "Jane",
+    "family_name" => "Doe",
+    "middle_name" => "Josephine",
+    "nickname" => "JJ",
+    "preferred_username" => "j.doe",
+    "profile" => "http://example.com/janedoe",
+    "picture" => "http://example.com/janedoe/me.jpg",
+    "website" => "http://example.com",
+    "email" => "janedoe@example.com",
+    "email_verified" => true,
+    "gender" => "female",
+    "birthdate" => "1972-03-31",
+    "zoneinfo" => "America/Los_Angeles",
+    "locale" => "en-US",
+    "phone_number" => "+1 (111) 222-3434",
+    "phone_number_verified" => false,
+    "address" => %{
+      "country" => "us"
+    },
+    "updated_at" => "1556845729"
+  }
 
   # Setups:
   setup_all do
+    signer = SpecSignerModule.get()
+
+    {:ok, id_token, _} = Joken.encode_and_sign(@user_info, signer)
     # Creating token:
     token = %OAuth2.AccessToken{
       access_token: "eyJz93alolk4laUWw",
       expires_at: 1_592_551_369,
-      other_params: %{"id_token" => "header.#{@id_token_payload}.signature"},
+      other_params: %{"id_token" => id_token},
       refresh_token: "GEbRxBNkitedjnXbL",
       token_type: "Bearer"
     }
 
-    # Read the fixture with the user information:
-    {:ok, json} =
-      "test/fixtures/auth0.json"
-      |> Path.expand()
-      |> File.read()
-
-    user_info = Jason.decode!(json)
-
     {:ok,
      %{
-       user_info: user_info,
+       id_token: id_token,
        token: token
      }}
   end
@@ -104,7 +120,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
   end
 
   describe "handle_callback!" do
-    test "nominal callback from auth0" do
+    test "nominal callback from auth0", %{id_token: id_token} do
       request_conn =
         :get
         |> conn("/auth/auth0", id: "foo")
@@ -113,8 +129,13 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
       state = request_conn.private[:ueberauth_state_param]
       code = "some_code"
+      body = id_token |> response_body() |> Jason.encode!()
 
-      use_cassette "auth0-ok-response", match_requests_on: [:query] do
+      use_cassette :stub,
+        method: :post,
+        headers: response_headers(),
+        body: body,
+        status_code: 200 do
         conn =
           :get
           |> conn("/auth/auth0/callback",
@@ -133,7 +154,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
         assert auth.provider == :auth0
         assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
+        assert auth.uid == @user_id
         assert conn.private.auth0_state == state
 
         ## Tokens have expiration time (see other test below)
@@ -142,7 +163,9 @@ defmodule Ueberauth.Strategy.Auth0Test do
       end
     end
 
-    test "nominal callback from auth0 but without state: potential CSRF attack" do
+    test "nominal callback from auth0 but without state: potential CSRF attack", %{
+      id_token: id_token
+    } do
       request_conn =
         :get
         |> conn("/auth/auth0", id: "foo")
@@ -150,8 +173,13 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Conn.fetch_cookies()
 
       code = "some_code"
+      body = id_token |> response_body() |> Jason.encode!()
 
-      use_cassette "auth0-ok-response", match_requests_on: [:query] do
+      use_cassette :stub,
+        method: :post,
+        headers: response_headers(),
+        body: body,
+        status_code: 200 do
         conn =
           :get
           |> conn("/auth/auth0/callback",
@@ -179,7 +207,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
       end
     end
 
-    test "invalid callback from auth0 without code" do
+    test "cannot verify id_token" do
       request_conn =
         :get
         |> conn("/auth/auth0", id: "foo")
@@ -187,8 +215,59 @@ defmodule Ueberauth.Strategy.Auth0Test do
         |> Plug.Conn.fetch_cookies()
 
       state = request_conn.private[:ueberauth_state_param]
+      code = "some_code"
 
-      use_cassette "auth0-ok-response", match_requests_on: [:query] do
+      signer = Joken.Signer.create("HS256", "the-wrong-secret")
+      {:ok, id_token, _} = Joken.encode_and_sign(@user_info, signer)
+      body = id_token |> response_body() |> Jason.encode!()
+
+      use_cassette :stub,
+        method: :post,
+        headers: response_headers(),
+        body: body,
+        status_code: 200 do
+        conn =
+          :get
+          |> conn("/auth/auth0/callback",
+            id: "foo",
+            code: code,
+            state: state
+          )
+          |> Map.put(:cookies, request_conn.cookies)
+          |> Map.put(:req_cookies, request_conn.req_cookies)
+          |> Plug.Session.call(@session_options)
+          |> SpecRouter.call(@router)
+
+        assert conn.resp_body == "auth0 callback"
+
+        auth = conn.assigns.ueberauth_failure
+
+        csrf_attack = %Ueberauth.Failure.Error{
+          message: "Could not validate token",
+          message_key: "failed_token_verification"
+        }
+
+        assert auth.provider == :auth0
+        assert auth.strategy == Ueberauth.Strategy.Auth0
+        assert auth.errors == [csrf_attack]
+      end
+    end
+
+    test "invalid callback from auth0 without code", %{id_token: id_token} do
+      request_conn =
+        :get
+        |> conn("/auth/auth0", id: "foo")
+        |> SpecRouter.call(@router)
+        |> Plug.Conn.fetch_cookies()
+
+      state = request_conn.private[:ueberauth_state_param]
+      body = id_token |> response_body() |> Jason.encode!()
+
+      use_cassette :stub,
+        method: :post,
+        headers: response_headers(),
+        body: body,
+        status_code: 200 do
         conn =
           :get
           |> conn("/auth/auth0/callback",
@@ -212,42 +291,6 @@ defmodule Ueberauth.Strategy.Auth0Test do
         assert auth.provider == :auth0
         assert auth.strategy == Ueberauth.Strategy.Auth0
         assert auth.errors == [missing_code_error]
-      end
-    end
-
-    test "invalid callback from auth0 with invalid id_token payload" do
-      request_conn =
-        :get
-        |> conn("/auth/auth0", id: "foo")
-        |> SpecRouter.call(@router)
-        |> Plug.Conn.fetch_cookies()
-
-      state = request_conn.private[:ueberauth_state_param]
-      code = "some_code"
-
-      use_cassette "auth0-invalid-id-token", match_requests_on: [:query] do
-        conn =
-          :get
-          |> conn("/auth/auth0/callback",
-            id: "foo",
-            code: code,
-            state: state
-          )
-          |> Map.put(:cookies, request_conn.cookies)
-          |> Map.put(:req_cookies, request_conn.req_cookies)
-          |> Plug.Session.call(@session_options)
-          |> SpecRouter.call(@router)
-
-        auth = conn.assigns.ueberauth_failure
-
-        invalid_grant_error = %Ueberauth.Failure.Error{
-          message: "Subject (sub) claim must be a string present in the ID token",
-          message_key: "invalid_id_token"
-        }
-
-        assert auth.provider == :auth0
-        assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.errors == [invalid_grant_error]
       end
     end
 
@@ -319,7 +362,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
       end
     end
 
-    test "callback from auth0 with no expiration time of tokens" do
+    test "callback from auth0 with no expiration time of tokens", %{id_token: id_token} do
       request_conn =
         :get
         |> conn("/auth/auth0", id: "foo")
@@ -328,7 +371,9 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
       state = request_conn.private[:ueberauth_state_param]
 
-      use_cassette "auth0-token-doesnt-expire", match_requests_on: [:query] do
+      body = id_token |> response_body() |> Map.delete("expires_in") |> Jason.encode!()
+
+      use_cassette :stub, method: :post, headers: response_headers(), body: body, status_code: 200 do
         conn =
           :get
           |> conn("/auth/auth0/callback",
@@ -348,7 +393,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
         # Same information as default token
         assert auth.provider == :auth0
         assert auth.strategy == Ueberauth.Strategy.Auth0
-        assert auth.uid == "auth0|lyy5v5utb6n9qfm4ihi3l7pv34po66"
+        assert auth.uid == @user_id
         assert conn.private.auth0_state == state
 
         ## Difference here
@@ -360,12 +405,11 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
   describe "info/1" do
     test "user information parsing", fixtures do
-      user_info = fixtures.user_info
       token = fixtures.token
 
       conn = %Plug.Conn{
         private: %{
-          auth0_user: user_info,
+          auth0_user: @user_info,
           auth0_token: token
         }
       }
@@ -391,12 +435,12 @@ defmodule Ueberauth.Strategy.Auth0Test do
 
   describe "extra/1" do
     test "user extra information parsing", fixtures do
-      user_info = fixtures.user_info
       token = fixtures.token
+      id_token = fixtures.id_token
 
       conn = %Plug.Conn{
         private: %{
-          auth0_user: user_info,
+          auth0_user: @user_info,
           auth0_token: token
         }
       }
@@ -406,7 +450,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
                  token: %OAuth2.AccessToken{
                    access_token: "eyJz93alolk4laUWw",
                    expires_at: 1_592_551_369,
-                   other_params: %{"id_token" => "header.#{@id_token_payload}.signature"},
+                   other_params: %{"id_token" => id_token},
                    refresh_token: "GEbRxBNkitedjnXbL",
                    token_type: "Bearer"
                  },
@@ -427,7 +471,7 @@ defmodule Ueberauth.Strategy.Auth0Test do
                    "picture" => "http://example.com/janedoe/me.jpg",
                    "preferred_username" => "j.doe",
                    "profile" => "http://example.com/janedoe",
-                   "sub" => "auth0|lyy5v452u345tbn943qf",
+                   "sub" => @user_id,
                    "updated_at" => "1556845729",
                    "website" => "http://example.com",
                    "zoneinfo" => "America/Los_Angeles"
@@ -435,5 +479,19 @@ defmodule Ueberauth.Strategy.Auth0Test do
                }
              }
     end
+  end
+
+  defp response_headers do
+    [{"Content-Type", "application/json"}]
+  end
+
+  defp response_body(id_token) do
+    %{
+      "access_token" => "eyJz93alolk4laUWw",
+      "scope" => "openid profile email",
+      "id_token" => id_token,
+      "token_type" => "Bearer",
+      "expires_in" => 86400
+    }
   end
 end
