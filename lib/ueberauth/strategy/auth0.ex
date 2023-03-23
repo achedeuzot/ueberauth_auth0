@@ -149,6 +149,9 @@ defmodule Ueberauth.Strategy.Auth0 do
           fetch_user(conn, client, state)
         end
 
+      {:error, %OAuth2.Error{reason: reason}} ->
+        set_errors!(conn, [error("OAuth2 error", reason)])
+
       {:error, client} ->
         set_errors!(conn, [error(client.body["error"], client.body["error_description"])])
     end
