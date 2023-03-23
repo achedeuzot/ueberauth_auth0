@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :ueberauth, Ueberauth,
   json_library: Jason,
