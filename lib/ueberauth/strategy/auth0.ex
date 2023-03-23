@@ -118,7 +118,7 @@ defmodule Ueberauth.Strategy.Auth0 do
 
     module = option(conn, :oauth2_module)
 
-    callback_url = module.authorize_url!(opts, [otp_app: option(conn, :otp_app)])
+    callback_url = module.authorize_url!(opts, otp_app: option(conn, :otp_app))
 
     redirect!(conn, callback_url)
   end
@@ -148,6 +148,9 @@ defmodule Ueberauth.Strategy.Auth0 do
         else
           fetch_user(conn, client, state)
         end
+
+      {:error, %OAuth2.Error{reason: reason}} ->
+        set_errors!(conn, [error("OAuth2 error", reason)])
 
       {:error, client} ->
         set_errors!(conn, [error(client.body["error"], client.body["error_description"])])
